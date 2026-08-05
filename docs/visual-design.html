@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>视觉规范说明 · 梅州客家非遗数字课程门户</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700;900&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/style.css">
+<style>.docmain{max-width:920px;margin:0 auto;padding:40px 24px 80px}.docmain h2{color:var(--earth-soft);font-family:var(--serif);margin-top:42px}.docmain h3{color:var(--indigo-soft);margin-top:26px}.docmain p,.docmain li{color:var(--text);line-height:1.9}.chip{display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border-radius:999px;border:1px solid var(--line-strong);margin:4px 6px 4px 0;font-size:13px}.sw{width:18px;height:18px;border-radius:5px;display:inline-block}.docmain table{width:100%;border-collapse:collapse;margin:18px 0}.docmain th,.docmain td{border:1px solid var(--line-strong);padding:9px 12px;font-size:14px;text-align:left}.docmain th{background:var(--bg-soft);color:var(--earth-soft)}code{background:var(--panel);padding:2px 7px;border-radius:5px;color:var(--earth-soft);font-size:13px}</style>
+</head>
+<body>
+<header class="nav">
+  <a class="brand" href="../index.html"><span class="brand-mark">客</span><span>梅州客家非遗</span></a>
+  <nav class="nav-links">
+    <a href="../index.html">首页</a><a href="../chapters.html">课程章节</a><a href="../map.html">互动地图</a>
+    <a href="../gallery.html">非遗长廊</a><a href="../archive.html">课程档案馆</a>
+  </nav>
+</header>
+<main class="docmain">
+  <div class="kicker">设计文档</div>
+  <h1 class="h2" style="font-family:var(--serif)">视觉规范与交互语言</h1>
+  <p class="section-sub">全站以「博物馆级东方叙事」为基调：靛蓝为骨、夯土黄为暖、焰红为魂，强调中文排版留白、衬线气质与丝滑过渡。</p>
+
+  <h2>一、三色主视觉</h2>
+  <p><span class="chip"><span class="sw" style="background:#24466b"></span>靛蓝 Indigo #24466b</span>
+     <span class="chip"><span class="sw" style="background:#c9973f"></span>夯土黄 Earth #c9973f</span>
+     <span class="chip"><span class="sw" style="background:#d45a3a"></span>焰红 Flame #d45a3a</span></p>
+  <table>
+    <tr><th>色</th><th>角色</th><th>典型用途</th></tr>
+    <tr><td>靛蓝 #24466b</td><td>主色 / 暗底</td><td>背景、标题、地图迁徙线、卡片结构</td></tr>
+    <tr><td>夯土黄 #c9973f</td><td>强调 / 暖金</td><td>导航高亮、描金标题、按钮、数据数字、光点</td></tr>
+    <tr><td>焰红 #d45a3a</td><td>点睛 / 火</td><td>火龙粒子、强调标签、提示语、关键数字</td></tr>
+    <tr><td>宣纸 #f2e8d5</td><td>浅底</td><td>讲义页、说明文档、长廊留白区</td></tr>
+  </table>
+
+  <h2>二、字体与排版</h2>
+  <ul>
+    <li><b>衬线（标题/正文重音）</b>：Noto Serif SC，回退 Songti SC / STSong / SimSun，营造碑刻与典籍气质。</li>
+    <li><b>无衬线（辅助/界面）</b>：Noto Sans SC，回退 PingFang SC / Microsoft YaHei。</li>
+    <li><b>主标题描金</b>：<code>.gold-text</code> 用渐变 + 文字阴影模拟金箔质感（夯土黄→浅金→暗金）。</li>
+    <li><b>中文留白</b>：正文行高 1.9，段间距宽松；小标题用 <code>.kicker</code> 大字距（letter-spacing .4em）配短线分隔，强调呼吸感。</li>
+  </ul>
+
+  <h2>三、栅格与留白</h2>
+  <p>内容容器 <code>.wrap</code> 最大宽度约 1120px 居中；区块 <code>.section</code> 上下留白充足（桌面 ≥72px）。移动端单列堆叠，卡片网格自适应。</p>
+
+  <h2>四、动效语言（丝滑过渡）</h2>
+  <table>
+    <tr><th>动效</th><th>位置</th><th>实现</th></tr>
+    <tr><td>视差开场</td><td>首页 Hero</td><td>滚动时背景 <code>translateY*0.32</code>、内容 <code>*0.16</code> 并渐隐（hero.js）</td></tr>
+    <tr><td>火龙粒子</td><td>首页画布</td><td>Canvas 火粒上浮 + 辉光（焰红/夯土黄）</td></tr>
+    <tr><td>南迁光点轨迹</td><td>首页画布</td><td>自中原一路南下至梅州的光点连缀动画</td></tr>
+    <tr><td>滚动显现</td><td>全站</td><td>IntersectionObserver 触发 <code>.reveal → .in</code></td></tr>
+    <tr><td>立体卡片 / 时间轴</td><td>章节页</td><td>悬停抬升 + 光影，沿中轴时间线排布</td></tr>
+    <tr><td>360° 翻转</td><td>长廊</td><td>卡片点击 <code>rotateY(180deg)</code>，正面图 / 背面知识</td></tr>
+    <tr><td>Ken Burns / 画卷</td><td>章节详情</td><td>封面缓慢推拉 + Canvas 场景动态画卷（scenes.js）</td></tr>
+    <tr><td>脉冲环</td><td>背景乐按钮</td><td>播放态 <code>pulseRing</code> 呼吸提示</td></tr>
+  </table>
+
+  <h2>五、核心组件</h2>
+  <ul>
+    <li><b>导航</b>：固定顶栏，半透明 + 毛玻璃，当前页 <code>.active</code> 高亮夯土黄。</li>
+    <li><b>Hero</b>：全屏背景图（home-cover.png）+ 暗纱 + 画布 + 描金大标题 + 三入口 CTA。</li>
+    <li><b>章节卡 / 详情</b>：时间轴节点 + 立体封面卡；详情页含讲解稿、听讲解（TTS）、场景缩放。</li>
+    <li><b>地图</b>：Leaflet 标记三色分级（迁徙/县区/播迁），点击弹城市卡片含概况、代表非遗与章节跳转。</li>
+    <li><b>翻转卡</b>：瀑布流中的每件器物可点击翻转，背面为断代/工艺/流传/谱系/故事。</li>
+    <li><b>AI 讲解员</b>：右下角常驻头像（蓝衫客家妹子立绘），展开对话面板，流式打字 + 语音播报。</li>
+  </ul>
+
+  <h2>六、响应式与无障碍</h2>
+  <ul>
+    <li>断点：桌面 ≥1024px 多列；平板 640–1024px 两列；手机 &lt;640px 单列。</li>
+    <li>尊重 <code>prefers-reduced-motion</code>，可关闭大幅动效。</li>
+    <li>背景乐默认静音，需用户手势触发（满足浏览器自动播放策略）。</li>
+    <li>语义化标签 + <code>aria-label</code>，保证键盘可达。</li>
+  </ul>
+  <p style="margin-top:40px"><a class="btn" href="../archive.html">← 返回课程档案馆</a>　<a class="btn btn-solid" href="../index.html">回到首页</a></p>
+</main>
+</body>
+</html>

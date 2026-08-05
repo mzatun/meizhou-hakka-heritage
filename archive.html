@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>课程档案馆 · 梅州客家非遗</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%23c9973f'/%3E%3Ctext x='32' y='43' font-size='32' text-anchor='middle' fill='%230b0d12' font-family='serif'%3E%E5%AE%A2%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700;900&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="nav">
+  <a class="brand" href="index.html"><span class="brand-mark">客</span><span>梅州客家非遗</span></a>
+  <nav class="nav-links">
+    <a href="index.html">首页</a>
+    <a href="chapters.html">课程章节</a>
+    <a href="map.html">互动地图</a>
+    <a href="gallery.html">非遗长廊</a>
+    <a href="archive.html">课程档案馆</a>
+  </nav>
+  <button class="bgm-btn" id="bgmBtn" title="背景音乐">♪</button>
+</header>
+
+<section class="section" style="padding-top:150px">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="kicker">课 程 档 案 馆</div>
+      <h2 class="h2">讲义 · 课件 · <em>课程资产</em>一站下载</h2>
+      <p class="section-sub">以下讲义与教学 PPT 均由本课程项目生成，可自由用于课堂教学。种子数据与技术文档同步开放。</p>
+    </div>
+
+    <div class="dl-grid">
+      <div class="dl-card reveal">
+        <div class="icon">📖</div>
+        <h3>《梅州客家非遗精讲》讲义</h3>
+        <p>Word 文档，约八章完整内容：含课程导入、每章知识讲解、国家级非遗项目梳理、课堂讨论题与延伸阅读建议，可直接印发学生。</p>
+        <a class="btn btn-solid" href="downloads/meizhou-hakka-heritage-notes.docx" download>下载 Word 讲义</a>
+      </div>
+      <div class="dl-card reveal">
+        <div class="icon">🖥️</div>
+        <h3>《梅州客家非遗》配套教学 PPT</h3>
+        <p>配套课堂教学演示文稿：章节封面、知识要点、AI 生成视觉素材与课堂互动环节，采用与本站一致的靛蓝 / 夯土黄 / 焰红视觉体系。</p>
+        <a class="btn btn-solid" href="downloads/meizhou-hakka-heritage-slides.pptx" download>下载教学 PPT</a>
+      </div>
+    </div>
+
+    <div class="doc-list reveal">
+      <h3>课程资产与说明文档</h3>
+      <div class="doc-row">
+        <div class="t">种子内容：课程章节讲解稿<small>data/chapters.json · 八章知识讲解与要点</small></div>
+        <a class="btn" href="data/chapters.json" target="_blank">查看</a>
+      </div>
+      <div class="doc-row">
+        <div class="t">种子内容：地图节点数据<small>data/cities.json · 三十个迁徙与播迁节点</small></div>
+        <a class="btn" href="data/cities.json" target="_blank">查看</a>
+      </div>
+      <div class="doc-row">
+        <div class="t">种子内容：非遗器物数据<small>data/relics.json · 四十件器物断代/工艺/故事</small></div>
+        <a class="btn" href="data/relics.json" target="_blank">查看</a>
+      </div>
+      <div class="doc-row">
+        <div class="t">种子内容：AI 讲解员问答库<small>data/qa.json · 课程知识检索条目</small></div>
+        <a class="btn" href="data/qa.json" target="_blank">查看</a>
+      </div>
+      <div class="doc-row">
+        <div class="t">系统架构说明<small>docs/system-architecture.html · 技术栈/数据流/部署方式</small></div>
+        <a class="btn" href="docs/system-architecture.html" target="_blank">查看</a>
+      </div>
+      <div class="doc-row">
+        <div class="t">视觉规范说明<small>docs/visual-design.html · 三色体系/字体/排版/动效规范</small></div>
+        <a class="btn" href="docs/visual-design.html" target="_blank">查看</a>
+      </div>
+    </div>
+
+    <div class="notice reveal">
+      <b style="color:var(--flame-soft)">使用与版权声明：</b>本站全部封面图、章节插画、文物插画、讲解员立绘由 AI 文生图生成，背景乐为程序化生成的客家山歌风味音乐，动态画卷为 Canvas 程序化动效——均仅用于本课程教学演示，不构成对真实文物或真实非遗传承场景的实录。课程知识内容参考公开资料整理，非遗代表性项目的级别与批次等信息请以国家及广东省、梅州市各级文化和旅游主管部门官方公布为准。
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="wrap">
+    <div class="cols">
+      <div><h5>梅州客家非遗</h5><p>高校通识课程 · 沉浸式数字课程门户<br>客从何处来 · 非遗如何活</p></div>
+      <div><h5>课程导航</h5><p><a href="chapters.html">课程章节</a> · <a href="map.html">互动地图</a><br><a href="gallery.html">数字非遗长廊</a> · <a href="archive.html">课程档案馆</a></p></div>
+      <div><h5>说明</h5><p>本站图文音视觉素材由 AI 生成，仅用于教学演示。<br>非遗知识以各级官方公布信息为准。</p></div>
+    </div>
+    <div class="fine">© 2026 梅州客家非遗课程组 · 靛蓝 / 夯土黄 / 焰红 三色视觉体系 · 仅供教学交流使用</div>
+  </div>
+</footer>
+
+<script src="js/data.js"></script>
+<script src="js/voice.js"></script>
+<script src="js/bgm.js"></script>
+<script src="js/guide.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>

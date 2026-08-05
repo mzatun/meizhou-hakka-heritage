@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>数字非遗长廊 · 梅州客家非遗</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%23c9973f'/%3E%3Ctext x='32' y='43' font-size='32' text-anchor='middle' fill='%230b0d12' font-family='serif'%3E%E5%AE%A2%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700;900&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="nav">
+  <a class="brand" href="index.html"><span class="brand-mark">客</span><span>梅州客家非遗</span></a>
+  <nav class="nav-links">
+    <a href="index.html">首页</a>
+    <a href="chapters.html">课程章节</a>
+    <a href="map.html">互动地图</a>
+    <a href="gallery.html">非遗长廊</a>
+    <a href="archive.html">课程档案馆</a>
+  </nav>
+  <button class="bgm-btn" id="bgmBtn" title="背景音乐">♪</button>
+</header>
+
+<section class="gallery-hero wrap">
+  <div class="kicker" style="justify-content:center;display:flex">数 字 非 遗 长 廊</div>
+  <h1 class="h2 gold-text" style="font-size:44px">四十件器物 · 一部客家生活史</h1>
+  <p class="section-sub" style="margin:14px auto 0">从汉剧凤冠到侨批银信，从围龙屋模型到灶台铁锅——点击任意卡片，360° 翻转查看断代、工艺、流传区域与传承故事。</p>
+  <div class="filters" id="filters"></div>
+</section>
+
+<div class="wrap">
+  <div class="waterfall" id="waterfall"></div>
+</div>
+
+<div class="modal-mask" id="modal">
+  <button class="modal-close" id="modalClose">✕</button>
+  <div class="flip-scene">
+    <div class="flip-card" id="flipCard">
+      <div class="flip-face flip-front" id="flipFront"></div>
+      <div class="flip-face flip-back" id="flipBack"></div>
+    </div>
+    <div class="flip-hint">点击卡片翻转 · 正面器物 / 背面讲解</div>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="wrap">
+    <div class="cols">
+      <div><h5>梅州客家非遗</h5><p>高校通识课程 · 沉浸式数字课程门户<br>客从何处来 · 非遗如何活</p></div>
+      <div><h5>课程导航</h5><p><a href="chapters.html">课程章节</a> · <a href="map.html">互动地图</a><br><a href="gallery.html">数字非遗长廊</a> · <a href="archive.html">课程档案馆</a></p></div>
+      <div><h5>说明</h5><p>本站图文音视觉素材由 AI 生成，仅用于教学演示。<br>非遗知识以各级官方公布信息为准。</p></div>
+    </div>
+    <div class="fine">© 2026 梅州客家非遗课程组 · 靛蓝 / 夯土黄 / 焰红 三色视觉体系 · 仅供教学交流使用</div>
+  </div>
+</footer>
+
+<script src="js/data.js"></script>
+<script src="js/voice.js"></script>
+<script src="js/bgm.js"></script>
+<script src="js/guide.js"></script>
+<script>
+const CATS = [
+  { k: "all", name: "全部" },
+  { k: "music", name: "戏乐乐器", ids: ["r01","r02","r03","r04","r05","r06","r07","r08","r09","r37","r38"] },
+  { k: "fest", name: "节庆演艺", ids: ["r10","r11","r12","r13","r14"] },
+  { k: "craft", name: "建筑工艺", ids: ["r15","r20","r21","r22","r23","r24","r25","r26","r19"] },
+  { k: "cloth", name: "服饰织染", ids: ["r16","r17","r18"] },
+  { k: "doc", name: "文书记忆", ids: ["r27","r28","r29"] },
+  { k: "food", name: "饮食烟火", ids: ["r30","r31","r32","r33","r34","r35","r36","r39","r40"] }
+];
+
+(async () => {
+  const data = await loadData("relics");
+  const relics = data.relics;
+  const wf = qs("waterfall");
+
+  relics.forEach(r => {
+    const card = document.createElement("div");
+    card.className = "relic-card reveal";
+    card.dataset.id = r.id;
+    card.innerHTML = `<img src="${r.img}" alt="${r.name}" loading="lazy"><div class="cap"><b>${r.name}</b><span>${r.era}</span></div>`;
+    card.addEventListener("click", () => openModal(r));
+    wf.appendChild(card);
+  });
+
+  /* 筛选 */
+  const fb = qs("filters");
+  CATS.forEach((cat, i) => {
+    const b = document.createElement("button");
+    b.textContent = cat.name;
+    if (i === 0) b.classList.add("active");
+    b.addEventListener("click", () => {
+      fb.querySelectorAll("button").forEach(x => x.classList.remove("active"));
+      b.classList.add("active");
+      document.querySelectorAll(".relic-card").forEach(c => {
+        c.style.display = cat.k === "all" || cat.ids.includes(c.dataset.id) ? "" : "none";
+      });
+    });
+    fb.appendChild(b);
+  });
+
+  /* 翻转弹窗 */
+  const modal = qs("modal"), flipCard = qs("flipCard");
+  function openModal(r) {
+    flipCard.classList.remove("flipped");
+    qs("flipFront").innerHTML = `<img src="${r.img}" alt="${r.name}"><div class="name">${r.name}</div>`;
+    qs("flipBack").innerHTML = `
+      <h3>${r.name}</h3>
+      <div class="kv"><b>断代年代</b><span>${r.era}</span></div>
+      <div class="kv"><b>材质工艺</b><span>${r.craft}</span></div>
+      <div class="kv"><b>流传区域</b><span>${r.region}</span></div>
+      <div class="kv"><b>传承谱系</b><span>${r.lineage}</span></div>
+      <p class="story">${r.story}</p>
+      <div class="chlink"><a href="javascript:void(0)" onclick="document.getElementById('modalClose').click()">收起卡片</a></div>`;
+    modal.classList.add("show");
+    document.body.style.overflow = "hidden";
+    history.replaceState(null, "", `#${r.id}`);
+  }
+  function closeModal() {
+    modal.classList.remove("show");
+    document.body.style.overflow = "";
+  }
+  flipCard.addEventListener("click", () => flipCard.classList.toggle("flipped"));
+  qs("modalClose").addEventListener("click", closeModal);
+  modal.addEventListener("click", e => { if (e.target === modal) closeModal(); });
+  document.addEventListener("keydown", e => { if (e.key === "Escape") closeModal(); });
+
+  /* 深链跳转 */
+  if (location.hash) {
+    const r = relics.find(x => x.id === location.hash.slice(1));
+    if (r) setTimeout(() => openModal(r), 500);
+  }
+
+  /* reveal */
+  const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } }), { threshold: .08 });
+  document.querySelectorAll(".relic-card").forEach(el => io.observe(el));
+})();
+</script>
+<script src="js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>系统架构说明 · 梅州客家非遗数字课程门户</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700;900&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/style.css">
+<style>.docmain{max-width:920px;margin:0 auto;padding:40px 24px 80px}.docmain h2{color:var(--earth-soft);font-family:var(--serif);margin-top:42px}.docmain h3{color:var(--indigo-soft);margin-top:26px}.docmain p,.docmain li{color:var(--text);line-height:1.9}.docmain code{background:var(--panel);padding:2px 7px;border-radius:5px;color:var(--earth-soft);font-size:13px}.docmain table{width:100%;border-collapse:collapse;margin:18px 0}.docmain th,.docmain td{border:1px solid var(--line-strong);padding:9px 12px;font-size:14px;text-align:left}.docmain th{background:var(--bg-soft);color:var(--earth-soft)}.docmain pre{background:var(--panel);padding:14px 16px;border-radius:10px;overflow:auto;color:var(--text-dim);font-size:12.5px}</style>
+</head>
+<body>
+<header class="nav">
+  <a class="brand" href="../index.html"><span class="brand-mark">客</span><span>梅州客家非遗</span></a>
+  <nav class="nav-links">
+    <a href="../index.html">首页</a><a href="../chapters.html">课程章节</a><a href="../map.html">互动地图</a>
+    <a href="../gallery.html">非遗长廊</a><a href="../archive.html">课程档案馆</a>
+  </nav>
+</header>
+<main class="docmain">
+  <div class="kicker">工程文档</div>
+  <h1 class="h2" style="font-family:var(--serif)">系统架构与资源说明</h1>
+  <p class="section-sub">本页说明《梅州客家非遗》沉浸式数字课程门户的技术栈、目录结构、模块职责、数据流、AI 能力映射与扩展方式，供维护与二次开发参考。</p>
+
+  <h2>一、技术栈</h2>
+  <ul>
+    <li><b>纯静态前端</b>：HTML5 + CSS3 + 原生 JavaScript（ES2020），无打包、无框架、无构建步骤，可直接静态托管。</li>
+    <li><b>地图</b>：Leaflet 1.9.4（通过 CDN 引入），配合在线瓦片底图渲染客家迁徙与梅州非遗分布。</li>
+    <li><b>背景乐</b>：Web Audio API 实时合成五声音阶山歌风味旋律（竹笛音色模拟 + 低音持续音 + 简易混响），零音频文件依赖，可静音。</li>
+    <li><b>文生语音</b>：浏览器内置 Web Speech API（SpeechSynthesis，中文 <code>zh-CN</code>）实现讲解稿朗读与对话播报。</li>
+    <li><b>数据</b>：课程章节、城市节点、器物、问答均以 JSON 存放，运行时由 <code>fetch</code> 加载并带内存缓存。</li>
+    <li><b>视觉素材</b>：封面、章节图、讲解员立绘、40 件长廊器物均由 AI 文生图生成，统一存放于 <code>assets/img/</code>。</li>
+  </ul>
+
+  <h2>二、目录结构</h2>
+  <pre>梅州客家非遗_课程门户网站_20260805/
+├─ index.html          # 首页：视差开场 + 火龙粒子 + 迁徙光迹 + 描金标题
+├─ chapters.html       # 课程章节：时间轴 + 立体卡片
+├─ chapter.html        # 章节详情：知识讲解 + 语音朗读 + 场景画布 + 缩放
+├─ map.html            # 互动地图：Leaflet 30 节点（迁徙/县区/播迁）
+├─ gallery.html        # 数字非遗长廊：瀑布流 + 360° 翻转卡
+├─ archive.html        # 课程档案馆：讲义/课件/规范下载
+├─ css/style.css       # 全站视觉规范（三色体系/衬线排版/动效）
+├─ js/
+│  ├─ data.js          # loadData() JSON 加载器 + 工具函数
+│  ├─ voice.js         # Voice：Web Speech TTS 封装
+│  ├─ bgm.js           # BGM：Web Audio 生成式山歌风味背景乐
+│  ├─ guide.js         # Guide：AI 讲解员「阿蛮」问答 + 流式 + 语音
+│  ├─ hero.js          # 首页视差 + 火龙粒子 + 南迁光点轨迹
+│  ├─ scenes.js        # 章节场景 Canvas 动态画卷
+│  └─ main.js          # 导航高亮 + 滚动显现（IntersectionObserver）
+├─ data/               # chapters.json / cities.json / relics.json / qa.json
+├─ assets/img/         # covers(c1-8) / home-cover / guide / relics(r01-40)
+├─ downloads/          # 讲义.docx / 课件.pptx
+├─ docs/               # 本页 + 视觉规范页
+└─ refs/               # 文档生成脚本（build_docs.py）</pre>
+
+  <h2>三、模块职责</h2>
+  <table>
+    <tr><th>模块</th><th>职责</th><th>关键接口</th></tr>
+    <tr><td>data.js</td><td>统一数据加载与缓存、DOM 工具</td><td><code>loadData(name)</code> / <code>qs</code> / <code>esc</code></td></tr>
+    <tr><td>voice.js</td><td>中文语音朗读、暂停/恢复/停止</td><td><code>Voice.speak(text)</code> / <code>Voice.stop()</code></td></tr>
+    <tr><td>bgm.js</td><td>生成式背景乐与静音切换</td><td><code>BGM.toggle()</code> / <code>BGM.start()</code></td></tr>
+    <tr><td>guide.js</td><td>AI 讲解员：知识库匹配、流式打字、语音播报</td><td>自动挂载右下角按钮与对话面板</td></tr>
+    <tr><td>hero.js</td><td>首页视差、火粒上浮、南迁光点轨迹 Canvas</td><td>绑定 <code>.hero-bg</code> / <code>#heroCanvas</code></td></tr>
+    <tr><td>scenes.js</td><td>8 章场景动态画卷（按 <code>scene</code> 字段切换）</td><td><code>Scenes.start(cv,type)</code></td></tr>
+    <tr><td>main.js</td><td>导航高亮、滚动显现</td><td><code>observeReveals()</code></td></tr>
+  </table>
+
+  <h2>四、数据流</h2>
+  <p>页面脚本调用 <code>loadData("chapters"|"cities"|"relics"|"qa")</code> → <code>fetch("data/xxx.json")</code> → 解析为对象并缓存 → 渲染到 DOM（章节卡片、地图标记、长廊翻转卡、讲解员应答）。由于使用 <code>fetch</code>，站点需经 HTTP 服务访问（已通过静态服务器部署，本地可用 <code>python -m http.server</code> 预览）。</p>
+
+  <h2>五、AI 能力映射与务实替代</h2>
+  <table>
+    <tr><th>需求</th><th>实现方式</th><th>说明</th></tr>
+    <tr><td>封面/章节/长廊图</td><td>AI 文生图（已生成 PNG）</td><td>统一存于 assets/img，路径写入 JSON</td></tr>
+    <tr><td>山歌风味背景乐</td><td>Web Audio 实时合成五声旋律</td><td>可静音；如需真实音频，替换 assets/audio 并改 bgm.js</td></tr>
+    <tr><td>文生语音朗读</td><td>Web Speech API（zh-CN）</td><td>依赖浏览器语音引擎；可换云端 TTS</td></tr>
+    <tr><td>AI 讲解员对话</td><td>本地知识库 qa.json 意图匹配</td><td>零后端；可接入大模型 API 升级为自由问答</td></tr>
+    <tr><td>章节短视频</td><td>封面图 Ken Burns / Canvas 画卷</td><td>如需真实文生视频，补充 mp4 并在 chapter.html 嵌入</td></tr>
+  </table>
+
+  <h2>六、如何扩展</h2>
+  <ul>
+    <li><b>新增章节</b>：在 <code>data/chapters.json</code> 的 <code>chapters</code> 数组追加对象（含 <code>no/title/subtitle/period/level/summary/keywords/cover/scene/points/script</code>），并放入对应封面 <code>assets/img/covers/cN.png</code>。</li>
+    <li><b>新增地图节点</b>：在 <code>data/cities.json</code> 的 <code>route/counties/spread/overseas</code> 中追加（含 <code>name/lat/lng/...</code>，坐标用 WGS84）。</li>
+    <li><b>新增长廊器物</b>：在 <code>data/relics.json</code> 追加 <code>rXX</code> 对象并放入 <code>assets/img/relics/rXX.png</code>。</li>
+    <li><b>扩充讲解员知识</b>：在 <code>data/qa.json</code> 增加问答对（<code>keywords</code> + <code>answer</code>）。</li>
+    <li><b>重生成讲义/课件</b>：修改 <code>refs/build_docs.py</code> 后运行 <code>python refs/build_docs.py</code>。</li>
+  </ul>
+  <p style="margin-top:40px"><a class="btn" href="../archive.html">← 返回课程档案馆</a>　<a class="btn btn-solid" href="../index.html">回到首页</a></p>
+</main>
+</body>
+</html>

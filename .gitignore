@@ -1,0 +1,5 @@
+node_modules/
+output/raw-assets/
+output/讲义/
+output/slides-qa.pdf
+*.tmp

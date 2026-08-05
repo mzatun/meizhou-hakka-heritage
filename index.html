@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>梅州客家非遗 · 沉浸式数字课程门户</title>
+<meta name="description" content="高校通识课《梅州客家非遗》沉浸式数字课程门户：客家迁徙、山歌汉剧、埔寨火龙、围龙屋、侨批过番——博物馆级视觉与AI讲解。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%23c9973f'/%3E%3Ctext x='32' y='43' font-size='32' text-anchor='middle' fill='%230b0d12' font-family='serif'%3E%E5%AE%A2%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700;900&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="nav">
+  <a class="brand" href="index.html"><span class="brand-mark">客</span><span>梅州客家非遗</span></a>
+  <nav class="nav-links">
+    <a href="index.html">首页</a>
+    <a href="chapters.html">课程章节</a>
+    <a href="map.html">互动地图</a>
+    <a href="gallery.html">非遗长廊</a>
+    <a href="archive.html">课程档案馆</a>
+  </nav>
+  <button class="bgm-btn" id="bgmBtn" title="背景音乐：已静音（点击播放）">♪</button>
+</header>
+
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-veil"></div>
+  <canvas id="heroCanvas"></canvas>
+  <div class="hero-inner">
+    <div class="hero-eyebrow">高校通识课程 · 沉浸式数字课程门户</div>
+    <h1 class="hero-title gold-text">梅州客家非遗</h1>
+    <p class="hero-sub">客从何处来 · 非遗如何活</p>
+    <p class="hero-theme">衣冠南渡的千年回响 · 世界客都的活态记忆</p>
+    <div class="hero-cta">
+      <a class="btn btn-solid" href="chapters.html">进入课程章节</a>
+      <a class="btn" href="map.html">展开迁徙地图</a>
+      <a class="btn" href="gallery.html">漫步非遗长廊</a>
+    </div>
+  </div>
+  <div class="scroll-hint">向下滑动</div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div class="kicker">课 程 概 览</div>
+      <h2 class="h2">一门课，读懂<em>世界客都</em>的千年文脉</h2>
+      <p class="section-sub">从永嘉之乱的衣冠南渡，到今天活态传承的非遗技艺——本课程以八个章节为经，以迁徙路线、三十个节点城市、四十件非遗器物为纬，带你走进梅州客家人的声音、戏台、节庆、居所与餐桌。</p>
+    </div>
+    <div class="stats">
+      <div class="stat reveal"><b>8</b><span>课程章节</span></div>
+      <div class="stat reveal"><b>30</b><span>迁徙地图节点</span></div>
+      <div class="stat reveal"><b>40</b><span>数字非遗器物</span></div>
+      <div class="stat reveal"><b>4+</b><span>国家级非遗项目</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="padding-top:30px">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div class="kicker">章 节 预 览</div>
+      <h2 class="h2">八章连读：从<em>迁徙</em>到<em>传承</em></h2>
+    </div>
+    <div class="h-scroll reveal" id="preview"></div>
+    <div style="text-align:center;margin-top:26px"><a class="btn" href="chapters.html">查看全部章节 →</a></div>
+  </div>
+</section>
+
+<section class="section" style="background:var(--bg-soft);border-top:1px solid var(--line);border-bottom:1px solid var(--line)">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div class="kicker">沉 浸 式 学 习 体 验</div>
+      <h2 class="h2">不只是阅读，更是<em>走进</em></h2>
+    </div>
+    <div class="feature-grid">
+      <div class="feature reveal">
+        <div class="icon">🗺️</div>
+        <h3>客家迁徙互动地图</h3>
+        <p>从洛阳到梅州，从梅州到南洋。三十个节点城市串起客家人一千七百年的足迹，点击查看城市卡片与代表非遗。</p>
+        <a class="go" href="map.html">展开地图 →</a>
+      </div>
+      <div class="feature reveal">
+        <div class="icon">🏺</div>
+        <h3>数字非遗长廊</h3>
+        <p>四十件客家非遗器物瀑布流展陈，点击卡片 360° 翻转，查看断代、工艺、流传区域与传承故事。</p>
+        <a class="go" href="gallery.html">步入长廊 →</a>
+      </div>
+      <div class="feature reveal">
+        <div class="icon">💬</div>
+        <h3>AI 讲解员「阿蛮」</h3>
+        <p>右下角常驻的客家妹子讲解员，课程知识自由问答，回答流式打字呈现，支持语音播报，随问随答。</p>
+        <a class="go" href="javascript:void(0)" onclick="document.getElementById('guideBtn').click()">唤起讲解员 →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap" style="text-align:center">
+    <div class="reveal">
+      <div class="kicker">课 程 寄 语</div>
+      <h2 class="h2" style="max-width:760px;margin:0 auto">山歌不唱心不开，<br><em>非遗不传根不在</em></h2>
+      <p class="section-sub" style="margin:18px auto 0">愿这门课成为你与客家文化的一次相遇——在迁徙的故事里读懂坚韧，在戏台山歌里听见乡愁，在围龙屋与粄香里感受生活的温度。</p>
+      <div style="margin-top:36px"><a class="btn btn-solid" href="chapters.html">开始学习</a></div>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="wrap">
+    <div class="cols">
+      <div><h5>梅州客家非遗</h5><p>高校通识课程 · 沉浸式数字课程门户<br>客从何处来 · 非遗如何活</p></div>
+      <div><h5>课程导航</h5><p><a href="chapters.html">课程章节</a> · <a href="map.html">互动地图</a><br><a href="gallery.html">数字非遗长廊</a> · <a href="archive.html">课程档案馆</a></p></div>
+      <div><h5>说明</h5><p>本站图文音视觉素材由 AI 生成，仅用于教学演示。<br>非遗知识以各级官方公布信息为准。</p></div>
+    </div>
+    <div class="fine">© 2026 梅州客家非遗课程组 · 靛蓝 / 夯土黄 / 焰红 三色视觉体系 · 仅供教学交流使用</div>
+  </div>
+</footer>
+
+<script src="js/data.js"></script>
+<script src="js/voice.js"></script>
+<script src="js/bgm.js"></script>
+<script src="js/guide.js"></script>
+<script src="js/hero.js"></script>
+<script>
+loadData("chapters").then(d => {
+  const box = qs("preview");
+  d.chapters.forEach(ch => {
+    const a = document.createElement("a");
+    a.className = "pv-card"; a.href = `chapter.html?id=${ch.id}`;
+    a.innerHTML = `
+      <div class="img" style="background-image:url('${ch.cover}')"><span class="pv-no">${String(ch.no).padStart(2,"0")}</span></div>
+      <div class="pv-body">
+        <h3>${ch.title} · ${ch.subtitle}</h3>
+        <p>${ch.summary}</p>
+        <div style="margin-top:12px"><span class="badge-level">${ch.level}</span></div>
+      </div>`;
+    box.appendChild(a);
+  });
+});
+</script>
+<script src="js/main.js"></script>
+</body>
+</html>

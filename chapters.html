@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>课程章节 · 梅州客家非遗</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%23c9973f'/%3E%3Ctext x='32' y='43' font-size='32' text-anchor='middle' fill='%230b0d12' font-family='serif'%3E%E5%AE%A2%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700;900&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="nav">
+  <a class="brand" href="index.html"><span class="brand-mark">客</span><span>梅州客家非遗</span></a>
+  <nav class="nav-links">
+    <a href="index.html">首页</a>
+    <a href="chapters.html">课程章节</a>
+    <a href="map.html">互动地图</a>
+    <a href="gallery.html">非遗长廊</a>
+    <a href="archive.html">课程档案馆</a>
+  </nav>
+  <button class="bgm-btn" id="bgmBtn" title="背景音乐">♪</button>
+</header>
+
+<section class="section" style="padding-top:140px;padding-bottom:20px">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="kicker">课 程 章 节</div>
+      <h2 class="h2">八章时间轴：一部<em>客家非遗</em>的通史</h2>
+      <p class="section-sub">以时间为轴，从东晋衣冠南渡讲到当代数字传承。点击任意章节卡片，进入含知识讲解、AI 语音朗读与高清细节放大的章节详情页。</p>
+    </div>
+  </div>
+</section>
+
+<div class="timeline" id="timeline"></div>
+
+<section class="section" style="padding-top:30px">
+  <div class="wrap" style="text-align:center">
+    <a class="btn btn-solid" href="map.html">章节读完 · 去地图上走走迁徙路</a>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="wrap">
+    <div class="cols">
+      <div><h5>梅州客家非遗</h5><p>高校通识课程 · 沉浸式数字课程门户<br>客从何处来 · 非遗如何活</p></div>
+      <div><h5>课程导航</h5><p><a href="chapters.html">课程章节</a> · <a href="map.html">互动地图</a><br><a href="gallery.html">数字非遗长廊</a> · <a href="archive.html">课程档案馆</a></p></div>
+      <div><h5>说明</h5><p>本站图文音视觉素材由 AI 生成，仅用于教学演示。<br>非遗知识以各级官方公布信息为准。</p></div>
+    </div>
+    <div class="fine">© 2026 梅州客家非遗课程组 · 靛蓝 / 夯土黄 / 焰红 三色视觉体系 · 仅供教学交流使用</div>
+  </div>
+</footer>
+
+<script src="js/data.js"></script>
+<script src="js/voice.js"></script>
+<script src="js/bgm.js"></script>
+<script src="js/guide.js"></script>
+<script>
+loadData("chapters").then(d => {
+  const tl = qs("timeline");
+  d.chapters.forEach(ch => {
+    const item = document.createElement("div");
+    item.className = "tl-item reveal";
+    item.innerHTML = `
+      <span class="tl-dot"></span>
+      <a class="ch-card" href="chapter.html?id=${ch.id}">
+        <div class="ch-cover">
+          <img src="${ch.cover}" alt="${ch.title}" loading="lazy">
+          <span class="ch-no">${String(ch.no).padStart(2,"0")}</span>
+        </div>
+        <div class="ch-body">
+          <h3>${ch.title}</h3>
+          <div class="sub">${ch.subtitle}</div>
+          <div class="ch-meta"><span class="badge-level">${ch.level}</span><span class="chip">${ch.period}</span></div>
+          <p class="summary">${ch.summary}</p>
+          <div class="ch-kw">${ch.keywords.slice(0,4).map(k=>`<span class="chip">${k}</span>`).join("")}</div>
+          <div class="ch-enter">进入章节 →</div>
+        </div>
+      </a>`;
+    tl.appendChild(item);
+  });
+  /* 卡片 3D 倾斜 */
+  document.querySelectorAll(".ch-card").forEach(card => {
+    card.addEventListener("mousemove", e => {
+      const r = card.getBoundingClientRect();
+      const x = (e.clientX - r.left) / r.width - .5, y = (e.clientY - r.top) / r.height - .5;
+      card.style.transform = `perspective(900px) rotateY(${x*7}deg) rotateX(${-y*7}deg) translateZ(6px)`;
+    });
+    card.addEventListener("mouseleave", () => { card.style.transform = ""; });
+  });
+  observeReveals();
+});
+</script>
+<script src="js/main.js"></script>
+</body>
+</html>

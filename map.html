@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>客家迁徙互动地图 · 梅州客家非遗</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%23c9973f'/%3E%3Ctext x='32' y='43' font-size='32' text-anchor='middle' fill='%230b0d12' font-family='serif'%3E%E5%AE%A2%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700;900&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="nav">
+  <a class="brand" href="index.html"><span class="brand-mark">客</span><span>梅州客家非遗</span></a>
+  <nav class="nav-links">
+    <a href="index.html">首页</a>
+    <a href="chapters.html">课程章节</a>
+    <a href="map.html">互动地图</a>
+    <a href="gallery.html">非遗长廊</a>
+    <a href="archive.html">课程档案馆</a>
+  </nav>
+  <button class="bgm-btn" id="bgmBtn" title="背景音乐">♪</button>
+</header>
+
+<div class="map-page">
+  <div class="map-head">
+    <h1 class="gold-text">客家迁徙 · 非遗分布地图</h1>
+    <p>三十个节点：从中原到梅州，从梅州到南洋。点击节点查看城市卡片。</p>
+  </div>
+  <div id="map"></div>
+  <div class="map-legend">
+    <h5>图 例 筛 选</h5>
+    <div id="legendItems"></div>
+    <div class="route-note">金色虚线：客家先民南迁示意路线（光点流动）</div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="js/data.js"></script>
+<script src="js/voice.js"></script>
+<script src="js/bgm.js"></script>
+<script src="js/guide.js"></script>
+<script>
+(async () => {
+  const [cities, relics, chapters] = await Promise.all([loadData("cities"), loadData("relics"), loadData("chapters")]);
+  const all = [...cities.route, ...cities.counties, ...cities.spread, ...cities.overseas];
+  const relicById = {}; relics.relics.forEach(r => relicById[r.id] = r);
+  const chById = {}; chapters.chapters.forEach(c => chById[c.id] = c);
+
+  const map = L.map("map", { zoomControl: false, attributionControl: true, minZoom: 2 }).setView([23.5, 112], 4.4);
+  L.control.zoom({ position: "bottomright" }).addTo(map);
+  L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>',
+    subdomains: "abcd", maxZoom: 19
+  }).addTo(map);
+
+  /* 迁徙示意路线（动画虚线） */
+  const routePts = cities.route.map(n => [n.lat, n.lng]).concat([[24.31, 116.12]]);
+  const curve = [];
+  for (let i = 0; i < routePts.length - 1; i++) {
+    const a = routePts[i], b = routePts[i+1];
+    for (let f = 0; f <= 1.0001; f += .08) {
+      const mx = (a[0]+b[0])/2 - (b[1]-a[1])*.18, my = (a[1]+b[1])/2 + (b[0]-a[0])*.18;
+      const x = (1-f)*(1-f)*a[0] + 2*(1-f)*f*mx + f*f*b[0];
+      const y = (1-f)*(1-f)*a[1] + 2*(1-f)*f*my + f*f*b[1];
+      curve.push([x, y]);
+    }
+  }
+  const routeLine = L.polyline(curve, { color: "#c9973f", weight: 2, opacity: .75, dashArray: "6 10", className: "route-anim" }).addTo(map);
+  const styleTag = document.createElement("style");
+  styleTag.textContent = ".route-anim{animation:dashMove 2.6s linear infinite}@keyframes dashMove{to{stroke-dashoffset:-32}}";
+  document.head.appendChild(styleTag);
+
+  /* 迁徙光点 */
+  const glow = L.circleMarker(curve[0], { radius: 5, color: "#f7e6b2", fillColor: "#f7e6b2", fillOpacity: 1, weight: 1 }).addTo(map);
+  let gi = 0;
+  setInterval(() => { gi = (gi + 2) % curve.length; glow.setLatLng(curve[gi]); }, 90);
+
+  /* 节点图层 */
+  const layers = { route: L.layerGroup().addTo(map), county: L.layerGroup().addTo(map), spread: L.layerGroup().addTo(map), overseas: L.layerGroup().addTo(map) };
+
+  function popupHtml(n) {
+    const typeInfo = cities.types[n.type];
+    let img = null;
+    if (n.relics && n.relics[0] && relicById[n.relics[0]]) img = relicById[n.relics[0]].img;
+    else if (n.chapters && n.chapters[0] && chById[n.chapters[0]]) img = chById[n.chapters[0]].cover;
+    const chLinks = (n.chapters || []).slice(0, 3).map(cid => {
+      const cc = chById[cid]; return cc ? `<a href="chapter.html?id=${cid}">第${cc.no}章 ${cc.title}</a>` : "";
+    }).join("");
+    const relicLink = n.relics && n.relics[0] ? `<a href="gallery.html#${n.relics[0]}">看相关器物</a>` : "";
+    return `
+      <div class="city-card">
+        ${img ? `<div class="pic" style="background-image:url('${img}')"><span class="tag">${typeInfo.label}</span></div>` : ""}
+        <div class="body">
+          <h3>${n.name}</h3>
+          <div class="sub">${n.sub}</div>
+          <p class="brief">${n.brief}</p>
+          <div class="ich">◈ ${n.ich}</div>
+          <div class="links">${chLinks}${relicLink}</div>
+        </div>
+      </div>`;
+  }
+
+  all.forEach(n => {
+    const t = cities.types[n.type];
+    const m = L.circleMarker([n.lat, n.lng], {
+      radius: n.type === "county" ? 9 : 7,
+      color: "#0b0d12", weight: 1.5,
+      fillColor: t.color, fillOpacity: .95
+    });
+    m.bindPopup(popupHtml(n), { maxWidth: 290, className: "city-popup" });
+    m.bindTooltip(`${n.name} · ${n.sub}`, { direction: "top", offset: [0, -6], className: "city-tip" });
+    m.addTo(layers[n.type]);
+  });
+
+  /* 图例筛选 */
+  const lg = qs("legendItems");
+  Object.entries(cities.types).forEach(([k, v]) => {
+    const label = document.createElement("label");
+    label.innerHTML = `<input type="checkbox" checked data-k="${k}"><span class="dot" style="background:${v.color}"></span>${v.label}`;
+    lg.appendChild(label);
+  });
+  lg.addEventListener("change", e => {
+    const k = e.target.dataset.k;
+    if (!k) return;
+    if (e.target.checked) map.addLayer(layers[k]); else map.removeLayer(layers[k]);
+  });
+})();
+</script>
+<script src="js/main.js"></script>
+</body>
+</html>

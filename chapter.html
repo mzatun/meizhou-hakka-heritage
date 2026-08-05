@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>章节详情 · 梅州客家非遗</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%23c9973f'/%3E%3Ctext x='32' y='43' font-size='32' text-anchor='middle' fill='%230b0d12' font-family='serif'%3E%E5%AE%A2%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700;900&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="nav">
+  <a class="brand" href="index.html"><span class="brand-mark">客</span><span>梅州客家非遗</span></a>
+  <nav class="nav-links">
+    <a href="index.html">首页</a>
+    <a href="chapters.html">课程章节</a>
+    <a href="map.html">互动地图</a>
+    <a href="gallery.html">非遗长廊</a>
+    <a href="archive.html">课程档案馆</a>
+  </nav>
+  <button class="bgm-btn" id="bgmBtn" title="背景音乐">♪</button>
+</header>
+
+<section class="detail-hero">
+  <div class="bg" id="dBg"></div>
+  <div class="veil"></div>
+  <div class="inner">
+    <div class="detail-no" id="dNo">第 一 章</div>
+    <h1 id="dTitle">—</h1>
+    <div class="sub" id="dSub"></div>
+    <div class="detail-meta" id="dMeta"></div>
+  </div>
+</section>
+
+<div class="wrap detail-layout">
+  <main>
+    <article class="script" id="dScript"></article>
+
+    <div class="tts-box">
+      <span style="font-size:20px">🎧</span>
+      <button class="btn" id="ttsPlay">▶ 播放讲解</button>
+      <button class="btn" id="ttsPause" style="display:none">⏸ 暂停</button>
+      <button class="btn" id="ttsStop" style="display:none">⏹ 停止</button>
+      <select id="ttsRate" style="background:var(--panel);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:8px 10px;font-size:13px">
+        <option value="0.9">慢速 0.9×</option>
+        <option value="1" selected>正常 1.0×</option>
+        <option value="1.2">快速 1.2×</option>
+      </select>
+      <span class="tts-state" id="ttsState">AI 语音朗读 · 文生语音</span>
+    </div>
+
+    <div class="points">
+      <h3>本章要点</h3>
+      <ul id="dPoints"></ul>
+    </div>
+
+    <div class="zoom-wrap">
+      <div class="zoom-hint">高清细节 · 滚轮缩放 · 拖拽平移 · 双击复位</div>
+      <div class="zoombox" id="zoombox"><img id="zoomImg" src="" alt="高清细节"></div>
+    </div>
+
+    <div class="scene-wrap">
+      <div class="zoom-hint">本章动态画卷 · 程序化生成的意象动效</div>
+      <div class="scene-box">
+        <canvas id="sceneCanvas"></canvas>
+        <span class="scene-tag" id="sceneTag"></span>
+      </div>
+    </div>
+  </main>
+
+  <aside>
+    <div class="side-card">
+      <h4>章节信息</h4>
+      <div id="dInfo"></div>
+    </div>
+    <div class="side-card">
+      <h4>相关非遗器物</h4>
+      <div class="side-thumbs" id="dRelics"></div>
+      <p style="margin-top:12px;font-size:12.5px;color:var(--text-dim)">点击进入数字非遗长廊查看翻转详情</p>
+    </div>
+    <div class="pn" id="dPn"></div>
+  </aside>
+</div>
+
+<footer class="footer">
+  <div class="wrap">
+    <div class="cols">
+      <div><h5>梅州客家非遗</h5><p>高校通识课程 · 沉浸式数字课程门户<br>客从何处来 · 非遗如何活</p></div>
+      <div><h5>课程导航</h5><p><a href="chapters.html">课程章节</a> · <a href="map.html">互动地图</a><br><a href="gallery.html">数字非遗长廊</a> · <a href="archive.html">课程档案馆</a></p></div>
+      <div><h5>说明</h5><p>本站图文音视觉素材由 AI 生成，仅用于教学演示。<br>非遗知识以各级官方公布信息为准。</p></div>
+    </div>
+    <div class="fine">© 2026 梅州客家非遗课程组 · 靛蓝 / 夯土黄 / 焰红 三色视觉体系 · 仅供教学交流使用</div>
+  </div>
+</footer>
+
+<script src="js/data.js"></script>
+<script src="js/voice.js"></script>
+<script src="js/bgm.js"></script>
+<script src="js/guide.js"></script>
+<script src="js/scenes.js"></script>
+<script>
+const CN_NUM = ["一","二","三","四","五","六","七","八"];
+const CHAPTER_RELICS = {
+  c1: ["r28","r18","r29"],
+  c2: ["r29","r09","r17","r08"],
+  c3: ["r01","r02","r05","r06","r07","r04"],
+  c4: ["r10","r11","r12","r13","r14"],
+  c5: ["r20","r21","r22","r23","r16","r24"],
+  c6: ["r32","r33","r34","r30","r31","r40"],
+  c7: ["r14","r15","r25","r35","r36"],
+  c8: ["r27","r28","r29","r18"]
+};
+const SCENE_NAMES = { route:"南迁光路 · 迁徙意象", echo:"山谷回声 · 山歌意象", stage:"戏台灯影 · 汉剧意象", sparks:"火龙焰火 · 节庆意象", house:"围龙夜色 · 栖居意象", steam:"粄香蒸汽 · 饮食意象", lantern:"上灯花灯 · 礼俗意象", sea:"过番远洋 · 出海意象" };
+
+(async () => {
+  const id = new URLSearchParams(location.search).get("id") || "c1";
+  const [cd, relics] = await Promise.all([loadData("chapters"), loadData("relics")]);
+  const idx = cd.chapters.findIndex(x => x.id === id);
+  const ch = cd.chapters[idx] || cd.chapters[0];
+  document.title = `${ch.title} · ${ch.subtitle} · 梅州客家非遗`;
+
+  qs("dBg").style.backgroundImage = `url('${ch.cover}')`;
+  qs("dNo").textContent = `第 ${CN_NUM[ch.no-1]} 章 · ${ch.period}`;
+  qs("dTitle").textContent = ch.title;
+  qs("dSub").textContent = ch.subtitle;
+  qs("dMeta").innerHTML = `<span class="badge-level">${ch.level}</span>` + ch.keywords.slice(0,5).map(k=>`<span class="chip">${k}</span>`).join("");
+
+  /* 讲解稿分段 */
+  const paras = ch.script.split(/(?<=。)(?=(?:第|今天|最后|客家|梅州|这些))/).filter(Boolean);
+  qs("dScript").innerHTML = paras.length > 1
+    ? paras.map(p=>`<p>${esc(p.trim())}</p>`).join("")
+    : `<p>${esc(ch.script)}</p>`;
+
+  qs("dPoints").innerHTML = ch.points.map((p,i)=>`<li data-i="${i+1}">${esc(p)}</li>`).join("");
+  qs("dInfo").innerHTML = `
+    <div class="kv"><b>章节</b><span>第${CN_NUM[ch.no-1]}章 ${ch.title}</span></div>
+    <div class="kv"><b>主题</b><span>${ch.subtitle}</span></div>
+    <div class="kv"><b>年代跨度</b><span>${ch.period}</span></div>
+    <div class="kv"><b>遗产级别</b><span>${ch.level}</span></div>`;
+
+  /* 相关器物 */
+  const rids = CHAPTER_RELICS[ch.id] || [];
+  qs("dRelics").innerHTML = rids.map(rid => {
+    const r = relics.relics.find(x => x.id === rid);
+    return r ? `<a href="gallery.html#${rid}" title="${r.name}"><img src="${r.img}" alt="${r.name}" loading="lazy"></a>` : "";
+  }).join("");
+
+  /* 上一章/下一章 */
+  const prev = cd.chapters[idx-1], next = cd.chapters[idx+1];
+  qs("dPn").innerHTML =
+    (prev ? `<a href="chapter.html?id=${prev.id}">← 上一章 · ${prev.title}</a>` : `<a href="chapters.html">← 返回章节列表</a>`) +
+    (next ? `<a href="chapter.html?id=${next.id}">下一章 · ${next.title} →</a>` : `<a href="map.html">课程学完 · 去地图走走 →</a>`);
+
+  /* 动态画卷 */
+  qs("sceneTag").textContent = SCENE_NAMES[ch.scene] || "";
+  Scenes.start(qs("sceneCanvas"), ch.scene);
+
+  /* 高清 zoom */
+  const zb = qs("zoombox"), zi = qs("zoomImg");
+  zi.src = ch.cover;
+  let scale = 1, tx = 0, ty = 0;
+  const apply = () => { zi.style.transform = `translate(${tx}px,${ty}px) scale(${scale})`; };
+  zb.addEventListener("wheel", e => {
+    e.preventDefault();
+    const r = zb.getBoundingClientRect();
+    const mx = e.clientX - r.left, my = e.clientY - r.top;
+    const ns = Math.min(5, Math.max(1, scale * (e.deltaY < 0 ? 1.16 : 1/1.16)));
+    if (ns === 1) { tx = ty = 0; } else {
+      const k = ns / scale;
+      tx = mx - (mx - tx) * k; ty = my - (my - ty) * k;
+      const maxX = 0, minX = r.width - r.width * ns, maxY = 0, minY = r.height - r.height * ns;
+      tx = Math.min(maxX, Math.max(minX, tx)); ty = Math.min(maxY, Math.max(minY, ty));
+    }
+    scale = ns; apply();
+  }, { passive: false });
+  let drag = null;
+  zb.addEventListener("pointerdown", e => { if (scale > 1) { drag = [e.clientX, e.clientY, tx, ty]; zb.setPointerCapture(e.pointerId); } });
+  zb.addEventListener("pointermove", e => { if (!drag) return; tx = drag[2] + e.clientX - drag[0]; ty = drag[3] + e.clientY - drag[1]; apply(); });
+  zb.addEventListener("pointerup", () => drag = null);
+  zb.addEventListener("dblclick", () => { scale = 1; tx = ty = 0; apply(); });
+
+  /* TTS */
+  const playB = qs("ttsPlay"), pauseB = qs("ttsPause"), stopB = qs("ttsStop"), stateEl = qs("ttsState");
+  if (!Voice.supported()) stateEl.textContent = "当前浏览器不支持语音合成";
+  function renderTts() {
+    const s = Voice.getState();
+    playB.style.display = s === "playing" ? "none" : "";
+    playB.textContent = s === "paused" ? "▶ 继续朗读" : "▶ 播放讲解";
+    pauseB.style.display = s === "playing" ? "" : "none";
+    stopB.style.display = s === "idle" ? "none" : "";
+    stateEl.textContent = s === "playing" ? "正在朗读讲解稿…" : s === "paused" ? "已暂停" : "AI 语音朗读 · 文生语音";
+  }
+  Voice.setOnStateChange(renderTts);
+  playB.addEventListener("click", () => {
+    const rate = parseFloat(qs("ttsRate").value);
+    if (Voice.getState() === "paused") Voice.resume();
+    else Voice.speak(ch.script, { rate });
+    renderTts();
+  });
+  pauseB.addEventListener("click", () => { Voice.pause(); renderTts(); });
+  stopB.addEventListener("click", () => { Voice.stop(); renderTts(); });
+})();
+</script>
+<script src="js/main.js"></script>
+</body>
+</html>
