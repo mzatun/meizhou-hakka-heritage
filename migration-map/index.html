@@ -723,11 +723,11 @@ function initMap(){
       paint:{"line-color":"#7FA6B5","line-width":1.2,"line-opacity":.6}},"prov-line");
     /* 8. 迁徙路线（V3 提速：空源占位 → idle 后 setData 填充 + 低缩放渐显。
        首帧只画底图/节点，线条随后淡入，避免同步渲染拖慢首屏） */
-    map.addSource("routes",{type:"geojson",data:{type:"FeatureCollection",features:[]}});
-    const R_OP=["interpolate",["linear"],["zoom"],3,0.45,4.6,0.95];
+    map.addSource("routes",{type:"geojson",data:routesFC});
+    const R_OP=["interpolate",["linear"],["zoom"],2.8,0.8,4.4,1];
     map.addLayer({id:"routes-glow",type:"line",source:"routes",filter:["!=",["get","type"],"alternative"],
       layout:{"line-cap":"round","line-join":"round"},
-      paint:{"line-color":"#6E5233","line-width":["case",["==",["get","type"],"main"],7,5],"line-opacity":R_OP}});
+      paint:{"line-color":"#6E5233","line-width":["interpolate",["linear"],["zoom"],3,6,6,9],"line-opacity":R_OP}});
     map.addLayer({id:"routes-alt-glow",type:"line",source:"routes",filter:["==",["get","type"],"alternative"],
       layout:{"line-cap":"round","line-join":"round"},
       paint:{"line-color":"#6E5233","line-width":4,"line-opacity":.75,"line-dasharray":[2.5,1.8]}});
@@ -735,15 +735,13 @@ function initMap(){
       layout:{"line-cap":"round","line-join":"round"},
       paint:{
         "line-color":["match",["get","batch"],1,"#9C2F1B",2,"#C05621",3,"#B8860B",4,"#2F6B4F",5,"#2E5E8C","#9C2F1B"],
-        "line-width":["case",["==",["get","type"],"main"],4.2,2.8],"line-opacity":R_OP}});
+        "line-width":["interpolate",["linear"],["zoom"],3,3.4,6,5],"line-opacity":R_OP}});
     map.addLayer({id:"routes-alt",type:"line",source:"routes",filter:["==",["get","type"],"alternative"],
       layout:{"line-cap":"round","line-join":"round"},
       paint:{
         "line-color":["match",["get","batch"],1,"#9C2F1B",2,"#C05621",3,"#B8860B",4,"#2F6B4F",5,"#2E5E8C","#9C2F1B"],
         "line-width":2.2,"line-opacity":.95,"line-dasharray":[2.5,1.8]}});
-    (window.requestIdleCallback||(f=>setTimeout(f,260)))(()=>{
-      try{map.getSource("routes").setData(routesFC);}catch(e){}
-    });
+
     /* 8.5 天空（球面大气） */
     try{map.setSky(SKY_GLOBE)}catch(e){}
     /* 11. 标记 / 装饰 / 省名 */
