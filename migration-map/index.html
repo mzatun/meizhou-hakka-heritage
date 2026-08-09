@@ -317,8 +317,7 @@ body::before{
 .bg-tag:hover{transform:translateY(-2px)}
 
 /* 统计 */
-.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
-@media(max-width:900px){.stats-grid{grid-template-columns:1fr}}
+.stats-grid{display:grid;grid-template-columns:1fr;gap:18px}
 .stat-card{
   background:rgba(255,252,244,.92);border:1px solid var(--gold-soft);border-radius:var(--radius);
   padding:18px 20px;box-shadow:var(--elev-sm);animation:fadeUp .5s ease both;
@@ -326,7 +325,7 @@ body::before{
 .stat-card h4{font-size:16px;color:var(--zhu);letter-spacing:.06em;margin-bottom:14px;display:flex;align-items:center;gap:8px}
 .stat-card h4::before{content:"";width:4px;height:16px;background:var(--gold);border-radius:2px}
 .bar-row{display:flex;align-items:center;gap:12px;margin:10px 0;font-size:13px}
-.bar-row .bl{width:150px;color:var(--ink);flex-shrink:0;text-align:left;display:flex;flex-direction:column;line-height:1.35}
+.bar-row .bl{width:170px;color:var(--ink);flex-shrink:0;text-align:left;display:flex;flex-direction:column;line-height:1.35}
 .bar-row .bl b{font-size:13px;letter-spacing:.04em}
 .bar-row .bl em{font-style:normal;font-size:11px;color:var(--ink-faint)}
 .bar-row .bw{flex:1;background:rgba(189,154,85,.15);border-radius:999px;height:22px;overflow:hidden;min-width:60px}
@@ -334,11 +333,11 @@ body::before{
 .bar-row .bv{width:92px;font-size:12px;color:var(--ink-soft);flex-shrink:0;display:flex;flex-direction:column;line-height:1.35}
 .bar-row .bv b{font-size:14px;color:var(--ink)}
 .bar-row .bv em{font-style:normal;font-size:11px;color:var(--ink-faint)}
-.dyn-wrap{position:relative;height:auto;margin:14px 0 2px;padding-top:0}
-.dyn-bar{position:absolute;top:0;height:38px;border-radius:6px 6px 0 0;background:var(--paper-c);border:1px solid var(--gold-soft);border-bottom:none;display:flex;align-items:flex-start;justify-content:center;transition:background .3s;overflow:visible;min-width:6px}
+.dyn-wrap{position:relative;height:auto;margin:16px 0 2px;padding-top:0}
+.dyn-bar{position:absolute;top:0;height:44px;border-radius:6px 6px 0 0;background:var(--paper-c);border:1px solid var(--gold-soft);border-bottom:none;display:flex;align-items:flex-start;justify-content:center;transition:background .3s;overflow:visible;min-width:6px}
 .dyn-bar:hover{background:var(--paper-d)}
 .dyn-bar .dn{font-size:11px;color:var(--ink-soft);padding-top:3px;writing-mode:vertical-rl;letter-spacing:.08em;white-space:nowrap;overflow:visible}
-.dyn-pins{position:relative;height:30px;margin-top:44px}
+.dyn-pins{position:relative;height:34px;margin-top:50px}
 .ev-pin{position:absolute;top:50%;width:13px;height:13px;border-radius:50%;border:2.5px solid #fff;box-shadow:0 1px 5px rgba(0,0,0,.45);transform:translate(-50%,-50%);cursor:pointer;transition:transform .15s,box-shadow .15s}
 .ev-pin:hover{transform:translate(-50%,-50%) scale(1.55);box-shadow:0 2px 9px rgba(0,0,0,.55)}
 .dyn-axis{display:flex;justify-content:space-between;font-size:11.5px;color:var(--ink-faint);margin:4px 2px 0}
@@ -346,7 +345,7 @@ body::before{
 .dyn-hint::before{content:"◆";color:var(--gold);font-size:9px;margin-right:5px}
 /* 桑基：全宽卡片 */
 .sankey-card{grid-column:1/-1}
-.sankey{position:relative;width:100%;height:clamp(260px,38vh,380px)}
+.sankey{position:relative;width:100%;height:clamp(320px,52vh,520px)}
 .sk-flow{cursor:pointer;transition:opacity .2s}
 .sk-flow.dim{opacity:.08}
 .sk-flow:hover{opacity:1!important}
@@ -393,7 +392,7 @@ table.dtab{width:100%;border-collapse:collapse;font-size:13.5px;min-width:660px}
   #chips{left:8px;right:8px;transform:none;bottom:14px;justify-content:flex-start;overflow-x:auto;border-radius:16px}
   #legend{display:none}
   #panel-inner{padding:20px 16px 70px}
-  .sankey{height:240px}
+  .sankey{height:300px}
   .bar-row .bl{width:118px}
 }
 /* ===== V3：影像资料 / 客家地标 / 延伸阅读 ===== */
@@ -600,8 +599,13 @@ const CAT_NAMES={military:"军事",political:"政治",social:"社会",economic:"
 /* ===== V3：影像资料库（事件/节点 链接资料，记录属性） ===== */
 const MEDIA={
   "松口":{img:"assets/media/songkou.jpg",t:"松口古镇 · 韩江畔",c:"客家人下南洋的第一站。火船码头旧址沿江而建，'自古松口不认州'，无数客家先民由此登船出洋。",from:"南方+ / 广东省情网",link:"https://dfz.gd.gov.cn/zjgd/content/post_3121900.html",linkTxt:"广东省情网 · 客家人下南洋第一站"},
-  "梅州":{img:"assets/media/weilongwu.jpg",t:"梅州围龙屋 · 客家民居",c:"客家传统民居典范：堂屋居中、横屋两翼、围屋环抱，体现聚族而居的宗族伦理。",from:"公开影像资料",link:"https://baike.baidu.com/item/%E5%9B%B4%E9%BE%99%E5%B1%8B",linkTxt:"百度百科 · 围龙屋"},
-  "长汀":{img:"assets/media/tulou.jpg",t:"福建土楼 · 客家聚落",c:"客家人聚族而居的大型夯土民居，2008 年列入世界文化遗产。",from:"公开影像资料",link:"https://zh.wikipedia.org/wiki/%E7%A6%8F%E5%BB%BA%E5%9C%9F%E6%A5%BC",linkTxt:"维基百科 · 福建土楼"}
+  "洛阳":{img:"assets/media/luoyang.jpg",t:"洛阳白马寺",c:"中国第一古刹，白马驮经之地。西晋末年永嘉之乱，洛阳城破，中原士民纷纷南渡——客家先民的第一次大迁徙自此始。",from:"公开影像资料",link:"https://zh.wikipedia.org/wiki/%E7%99%BD%E9%A9%AC%E5%AF%BA",linkTxt:"维基百科 · 白马寺"},
+  "西安":{img:"assets/media/xian.jpg",t:"西安城墙 · 长安故地",c:"唐都长安。安史之乱爆发，玄宗出逃，关中生灵涂炭，客家先民第二次大规模南迁由此开始。",from:"公开影像资料",link:"https://zh.wikipedia.org/wiki/%E9%95%BF%E5%AE%89%E5%9F%8E",linkTxt:"维基百科 · 长安"},
+  "开封":{img:"assets/media/kaifeng.jpg",t:"开封 · 汴京遗韵",c:"北宋都城汴京。靖康之变，金兵破城，宋室南渡，宗室士民随迁江南——客家第三次大迁徙。",from:"公开影像资料",link:"https://zh.wikipedia.org/wiki/%E5%BC%80%E5%B0%81%E5%BA%9C",linkTxt:"维基百科 · 开封"},
+  "赣州":{img:"assets/media/ganzhou.jpg",t:"赣州 · 客家摇篮",c:"江南宋城，客家先民南迁的重要中转与聚居地，被誉为'客家摇篮'，保存宋代古城墙与郁孤台。",from:"公开影像资料",link:"https://baike.baidu.com/item/%E8%B5%A3%E5%B7%9E",linkTxt:"百度百科 · 赣州"},
+  "长汀":{img:"assets/media/changting.jpg",t:"汀州古城 · 客家首府",c:"世界客家首府，客家先民由赣入闽的核心聚落。唐代置汀州，是客家民系形成的重要摇篮。",from:"公开影像资料",link:"https://zh.wikipedia.org/wiki/%E9%95%BF%E6%B1%80%E5%8E%BF",linkTxt:"维基百科 · 长汀"},
+  "汕头":{img:"assets/media/shantou.jpg",t:"汕头 · 小公园骑楼",c:"晚清开埠口岸，客家人出洋下南洋的主要通道。小公园骑楼街见证了近代客家华侨的出发与回归。",from:"公开影像资料",link:"https://zh.wikipedia.org/wiki/%E6%B1%95%E5%A4%B4%E5%B8%82",linkTxt:"维基百科 · 汕头"},
+  "梅州":{img:"assets/media/weilongwu.jpg",t:"梅州围龙屋 · 客家民居",c:"客家传统民居典范：堂屋居中、横屋两翼、围屋环抱，体现聚族而居的宗族伦理。",from:"公开影像资料",link:"https://baike.baidu.com/item/%E5%9B%B4%E9%BE%99%E5%B1%8B",linkTxt:"百度百科 · 围龙屋"}
 };
 const MEDIA_EVENT={
   "永嘉之乱":["https://zh.wikipedia.org/wiki/%E6%B0%B8%E5%98%89%E4%B9%8B%E4%B9%B1","维基百科 · 永嘉之乱","西晋末八王之乱后，匈奴刘聪攻破洛阳，中原士民南渡。"],
@@ -614,7 +618,9 @@ const MEDIA_EVENT={
 const MEDIA_FILM=[
   {t:"纪录片《客家人》· 央视",link:"https://search.bilibili.com/all?keyword=%E5%AE%A2%E5%AE%B6%E4%BA%BA%E7%BA%AA%E5%BD%95%E7%89%87"},
   {t:"纪录片《下南洋》· 十集",link:"https://search.bilibili.com/all?keyword=%E4%B8%8B%E5%8D%97%E6%B4%8B%E7%BA%AA%E5%BD%95%E7%89%87"},
-  {t:"《客从何处来》· 寻根之旅",link:"https://search.bilibili.com/all?keyword=%E5%AE%A2%E4%BB%8E%E4%BD%95%E5%A4%84%E6%9D%A5%E7%BA%AA%E5%BD%95%E7%89%87"}
+  {t:"《客从何处来》· 寻根之旅",link:"https://search.bilibili.com/all?keyword=%E5%AE%A2%E4%BB%8E%E4%BD%95%E5%A4%84%E6%9D%A5%E7%BA%AA%E5%BD%95%E7%89%87"},
+  {t:"《松口：客家人的出发地》· 专题",link:"https://search.bilibili.com/all?keyword=%E6%9D%BE%E5%8F%A3%E5%AE%A2%E5%AE%B6%E4%BA%BA"},
+  {t:"客家山歌 / 广东汉剧 · 非遗影像",link:"https://search.bilibili.com/all?keyword=%E5%AE%A2%E5%AE%B6%E5%B1%B1%E6%AD%8C%E5%B9%BF%E4%B8%9C%E6%B1%89%E5%89%A7"}
 ];
 const CAT_COLORS_BG={military:"#C0553A",political:"#D9822B",social:"#4A7BA8",economic:"#3DBB8C",culture:"#9C73AE"};
 const fmt=n=>n>=10000?(n/10000).toFixed(n%10000===0?0:1)+"万":String(n);
@@ -715,11 +721,13 @@ function initMap(){
     map.addSource("rivers",{type:"geojson",data:riversFC});
     map.addLayer({id:"rivers",type:"line",source:"rivers",layout:{"line-cap":"round"},
       paint:{"line-color":"#7FA6B5","line-width":1.2,"line-opacity":.6}},"prov-line");
-    /* 8. 迁徙路线（双层：米白描边 + 彩色线芯，保证地形上清晰） */
-    map.addSource("routes",{type:"geojson",data:routesFC});
+    /* 8. 迁徙路线（V3 提速：空源占位 → idle 后 setData 填充 + 低缩放渐显。
+       首帧只画底图/节点，线条随后淡入，避免同步渲染拖慢首屏） */
+    map.addSource("routes",{type:"geojson",data:{type:"FeatureCollection",features:[]}});
+    const R_OP=["interpolate",["linear"],["zoom"],3,0.45,4.6,0.95];
     map.addLayer({id:"routes-glow",type:"line",source:"routes",filter:["!=",["get","type"],"alternative"],
       layout:{"line-cap":"round","line-join":"round"},
-      paint:{"line-color":"#6E5233","line-width":["case",["==",["get","type"],"main"],7,5],"line-opacity":.9}});
+      paint:{"line-color":"#6E5233","line-width":["case",["==",["get","type"],"main"],7,5],"line-opacity":R_OP}});
     map.addLayer({id:"routes-alt-glow",type:"line",source:"routes",filter:["==",["get","type"],"alternative"],
       layout:{"line-cap":"round","line-join":"round"},
       paint:{"line-color":"#6E5233","line-width":4,"line-opacity":.75,"line-dasharray":[2.5,1.8]}});
@@ -727,12 +735,15 @@ function initMap(){
       layout:{"line-cap":"round","line-join":"round"},
       paint:{
         "line-color":["match",["get","batch"],1,"#9C2F1B",2,"#C05621",3,"#B8860B",4,"#2F6B4F",5,"#2E5E8C","#9C2F1B"],
-        "line-width":["case",["==",["get","type"],"main"],4.2,2.8],"line-opacity":1}});
+        "line-width":["case",["==",["get","type"],"main"],4.2,2.8],"line-opacity":R_OP}});
     map.addLayer({id:"routes-alt",type:"line",source:"routes",filter:["==",["get","type"],"alternative"],
       layout:{"line-cap":"round","line-join":"round"},
       paint:{
         "line-color":["match",["get","batch"],1,"#9C2F1B",2,"#C05621",3,"#B8860B",4,"#2F6B4F",5,"#2E5E8C","#9C2F1B"],
-        "line-width":2.2,"line-opacity":1,"line-dasharray":[2.5,1.8]}});
+        "line-width":2.2,"line-opacity":.95,"line-dasharray":[2.5,1.8]}});
+    (window.requestIdleCallback||(f=>setTimeout(f,260)))(()=>{
+      try{map.getSource("routes").setData(routesFC);}catch(e){}
+    });
     /* 8.5 天空（球面大气） */
     try{map.setSky(SKY_GLOBE)}catch(e){}
     /* 11. 标记 / 装饰 / 省名 */
@@ -847,16 +858,21 @@ function renderDeco(){
 }
 /* 背景音乐 */
 let audioEl=null,musicOn=false;
-function toggleMusic(){
-  if(!audioEl){
-    // 音乐资产已外链 assets/music.mp3（原内联 base64 约 4.8MB 已移除）
-    try{audioEl=new Audio("assets/music.mp3");audioEl.loop=true}catch(e){alert("音乐加载失败");return}
-  }
-  if(musicOn){audioEl.pause();musicOn=false;$("#music-btn").classList.remove("playing");$("#music-btn").textContent="♪"}
-  else{
-    audioEl.play().then(()=>{musicOn=true;$("#music-btn").classList.add("playing");$("#music-btn").textContent="♫"})
-      .catch(e=>{alert("播放失败（浏览器可能限制自动播放）："+e.message)});
-  }
+/* V3 优化：音乐默认开启。浏览器禁止无手势自动播放，故视觉预置"开"，
+   首个用户手势（点击/按键/触摸）时自动起播；显式静音后记忆偏好不再自动开 */
+let bgmAuto=true;try{bgmAuto=localStorage.getItem("kj_bgm")!=="0";}catch(e){}
+function ensureAudio(){if(!audioEl){try{audioEl=new Audio("assets/music.mp3");audioEl.loop=true}catch(e){}}}
+function setMusic(on){
+  ensureAudio();if(!audioEl)return;
+  if(on){audioEl.play().then(()=>{musicOn=true;$("#music-btn").classList.add("playing");$("#music-btn").textContent="♫";}).catch(()=>{});}
+  else{audioEl.pause();musicOn=false;$("#music-btn").classList.remove("playing");$("#music-btn").textContent="♪";}
+  try{localStorage.setItem("kj_bgm",on?"1":"0");}catch(e){}
+}
+function toggleMusic(){setMusic(!musicOn);}
+if(bgmAuto){
+  $("#music-btn").classList.add("playing");$("#music-btn").textContent="♫";   // 视觉预置开
+  const resume=()=>{setMusic(true);["pointerdown","keydown","touchstart"].forEach(e=>removeEventListener(e,resume));};
+  ["pointerdown","keydown","touchstart"].forEach(e=>addEventListener(e,resume,{once:true,passive:true}));
 }
 function updateMarkerVisibility(){
   nodeMarkers.forEach(m=>{
@@ -1094,34 +1110,42 @@ function renderSankey(){
   const ends=["江苏","安徽","湖北","湖南","江西","福建","广东","台湾","东南亚"];
   const byFrom={};DATA.flows.forEach(f=>{byFrom[f.from]=byFrom[f.from]||[];byFrom[f.from].push(f)});
   const maxF=Math.max(...DATA.flows.map(f=>f.pop));
-  const W=760,H=330,LEFT=140,RIGHT=590;
-  const parts=[];
-  const lBox={};
-  nodes.forEach((nm,i)=>{
-    const total=(byFrom[nm]||[]).reduce((s,f)=>s+f.pop,0);
-    const h=Math.max(total/maxF*200,22);
-    const y=46+i*47;
-    lBox[nm]={y,h,total};
-    parts.push(`<g><rect x="${LEFT-118}" y="${y}" width="110" height="${h}" rx="13" fill="#9C2F1B"/>
-      <text x="${LEFT-63}" y="${(y+h/2+5).toFixed(1)}" font-size="13.5" fill="#fff" text-anchor="middle">${nm} ${fmt(total)}</text></g>`);
+  const W=760,LEFT=140,RIGHT=590;
+  /* 源列：按总量降序，块高按比例(18-56px) + 固定 10px 间隙 —— 永不重叠 */
+  const lTot={};nodes.forEach(nm=>{lTot[nm]=(byFrom[nm]||[]).reduce((s,f)=>s+f.pop,0)});
+  const lSorted=[...nodes].sort((a,b)=>lTot[b]-lTot[a]);
+  const maxL=Math.max(...Object.values(lTot),1);
+  const parts=[];let ly=46;const lBox={};
+  lSorted.forEach(nm=>{
+    const h=Math.round(18+(lTot[nm]/maxL)*38);
+    lBox[nm]={y:ly,h,total:lTot[nm]};
+    parts.push(`<g><rect x="${LEFT-118}" y="${ly}" width="110" height="${h}" rx="13" fill="#9C2F1B"/>
+      <text x="${LEFT-63}" y="${(ly+h/2+5).toFixed(1)}" font-size="13.5" fill="#fff" text-anchor="middle">${nm} ${fmt(lTot[nm])}</text></g>`);
+    ly+=h+10;
   });
-  const endTotal={};DATA.flows.forEach(f=>{endTotal[f.to]=endTotal[f.to]||0;endTotal[f.to]+=f.pop});
-  const sortedEnds=[...ends].sort((a,b)=>endTotal[b]-endTotal[a]);
-  const rBox={};
-  sortedEnds.forEach((nm,i)=>{
-    const h=Math.max(endTotal[nm]/maxF*200,22);
-    const y=46+i*33;
-    rBox[nm]={y,h};
-    parts.push(`<g><rect x="${RIGHT+8}" y="${y}" width="110" height="${h}" rx="13" fill="#1D9E75"/>
-      <text x="${RIGHT+63}" y="${(y+h/2+5).toFixed(1)}" font-size="13.5" fill="#fff" text-anchor="middle">${nm} ${fmt(endTotal[nm])}</text></g>`);
+  /* 汇列：同理 */
+  const eTot={};DATA.flows.forEach(f=>{eTot[f.to]=(eTot[f.to]||0)+f.pop});
+  const eSorted=[...ends].sort((a,b)=>eTot[b]-eTot[a]);
+  const maxE=Math.max(...Object.values(eTot),1);
+  let ry=46;const rBox={};
+  eSorted.forEach(nm=>{
+    const h=Math.round(18+(eTot[nm]/maxE)*38);
+    rBox[nm]={y:ry,h};
+    parts.push(`<g><rect x="${RIGHT+8}" y="${ry}" width="110" height="${h}" rx="13" fill="#1D9E75"/>
+      <text x="${RIGHT+63}" y="${(ry+h/2+5).toFixed(1)}" font-size="13.5" fill="#fff" text-anchor="middle">${nm} ${fmt(eTot[nm])}</text></g>`);
+    ry+=h+10;
   });
+  /* 流线：源块中心 → 汇块中心，宽度按人口比例 */
   DATA.flows.forEach(f=>{
     const l=lBox[f.from],r=rBox[f.to];
-    const w=Math.max(f.pop/maxF*200*0.13,2.5);
+    if(!l||!r)return;
+    const w=Math.max(f.pop/maxF*90,2.5);
     const y0=l.y+l.h/2,y1=r.y+r.h/2;
     parts.push(`<path class="sk-flow" d="M${LEFT} ${y0.toFixed(1)} C ${((LEFT+(RIGHT-LEFT)/2)).toFixed(1)} ${y0.toFixed(1)}, ${((LEFT+(RIGHT-LEFT)/2)).toFixed(1)} ${y1.toFixed(1)}, ${RIGHT} ${y1.toFixed(1)}" stroke="rgba(156,47,27,.40)" stroke-width="${w.toFixed(1)}" fill="none" data-flow="${f.from}→${f.to}">
     <title>${f.from} → ${f.to}：${fmt(f.pop)} 人</title></path>`);
   });
+  /* 视口高度随两端总高自适应（不被裁剪） */
+  const H=Math.max(ly,ry)+24;
   return `<svg viewBox="0 0 ${W} ${H}" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
     ${parts.join("")}
     <text x="${LEFT-118}" y="26" font-size="12.5" fill="#8C7A55">迁出地（源）</text>
@@ -1438,8 +1462,8 @@ waitMap().then(map=>{
   /* ---- 装饰随缩放等比缩 ---- */
   const updDs=()=>{const z=map.getZoom();document.body.style.setProperty("--ds",Math.max(.45,Math.min(1,(z-3)/3.5)).toFixed(3));};
   map.on("zoom",updDs);map.on("move",updDs);updDs();
-  /* 骆驼缓缓东行 */
-  if(!RMv2&&typeof CAMELS!=="undefined"&&CAMELS.length)__camelsOn();
+  /* 骆驼缓缓东行：默认关（省电，参考站同款）；控制台 window.__camelsOn() 可开 */
+  if(!RMv2&&typeof CAMELS!=="undefined"&&CAMELS.length)window.__camelsOff();
   /* ---- 地形符号层：等 style load 后挂（addImage/addLayer 需 style 就绪） ---- */
   const addSym=async()=>{
     try{
