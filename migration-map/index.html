@@ -325,20 +325,28 @@ body::before{
 }
 .stat-card h4{font-size:16px;color:var(--zhu);letter-spacing:.06em;margin-bottom:14px;display:flex;align-items:center;gap:8px}
 .stat-card h4::before{content:"";width:4px;height:16px;background:var(--gold);border-radius:2px}
-.bar-row{display:flex;align-items:center;gap:10px;margin:9px 0;font-size:13px}
-.bar-row .bl{width:118px;color:var(--ink);flex-shrink:0;text-align:right}
-.bar-row .bw{flex:1;background:rgba(189,154,85,.15);border-radius:999px;height:20px;overflow:hidden}
+.bar-row{display:flex;align-items:center;gap:12px;margin:10px 0;font-size:13px}
+.bar-row .bl{width:150px;color:var(--ink);flex-shrink:0;text-align:left;display:flex;flex-direction:column;line-height:1.35}
+.bar-row .bl b{font-size:13px;letter-spacing:.04em}
+.bar-row .bl em{font-style:normal;font-size:11px;color:var(--ink-faint)}
+.bar-row .bw{flex:1;background:rgba(189,154,85,.15);border-radius:999px;height:22px;overflow:hidden;min-width:60px}
 .bar-row .bf{height:100%;border-radius:999px;transition:width .9s cubic-bezier(.2,.7,.2,1)}
-.bar-row .bv{width:84px;font-size:12px;color:var(--ink-soft);flex-shrink:0}
-.dyn-wrap{display:flex;align-items:center;gap:2px;height:64px;position:relative;margin:18px 0 8px}
-.dyn-bar{position:relative;height:34px;border-radius:6px 6px 0 0;background:var(--paper-c);border:1px solid var(--gold-soft);border-bottom:none;display:flex;align-items:flex-start;justify-content:center;transition:background .3s}
+.bar-row .bv{width:92px;font-size:12px;color:var(--ink-soft);flex-shrink:0;display:flex;flex-direction:column;line-height:1.35}
+.bar-row .bv b{font-size:14px;color:var(--ink)}
+.bar-row .bv em{font-style:normal;font-size:11px;color:var(--ink-faint)}
+.dyn-wrap{position:relative;height:auto;margin:14px 0 2px;padding-top:0}
+.dyn-bar{position:absolute;top:0;height:38px;border-radius:6px 6px 0 0;background:var(--paper-c);border:1px solid var(--gold-soft);border-bottom:none;display:flex;align-items:flex-start;justify-content:center;transition:background .3s;overflow:visible;min-width:6px}
 .dyn-bar:hover{background:var(--paper-d)}
-.dyn-bar .dn{font-size:11px;color:var(--ink-soft);padding-top:3px;writing-mode:vertical-rl;letter-spacing:.08em;white-space:nowrap;overflow:hidden}
-.ev-pin{position:absolute;width:11px;height:11px;border-radius:50%;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.4);transform:translate(-50%,-50%);cursor:pointer;transition:transform .15s}
-.ev-pin:hover{transform:translate(-50%,-50%) scale(1.5)}
+.dyn-bar .dn{font-size:11px;color:var(--ink-soft);padding-top:3px;writing-mode:vertical-rl;letter-spacing:.08em;white-space:nowrap;overflow:visible}
+.dyn-pins{position:relative;height:30px;margin-top:44px}
+.ev-pin{position:absolute;top:50%;width:13px;height:13px;border-radius:50%;border:2.5px solid #fff;box-shadow:0 1px 5px rgba(0,0,0,.45);transform:translate(-50%,-50%);cursor:pointer;transition:transform .15s,box-shadow .15s}
+.ev-pin:hover{transform:translate(-50%,-50%) scale(1.55);box-shadow:0 2px 9px rgba(0,0,0,.55)}
+.dyn-axis{display:flex;justify-content:space-between;font-size:11.5px;color:var(--ink-faint);margin:4px 2px 0}
+.dyn-hint{font-size:12px;color:var(--ink-faint);margin:10px 0 0;letter-spacing:.03em}
+.dyn-hint::before{content:"◆";color:var(--gold);font-size:9px;margin-right:5px}
 /* 桑基：全宽卡片 */
 .sankey-card{grid-column:1/-1}
-.sankey{position:relative;width:100%;height:330px}
+.sankey{position:relative;width:100%;height:clamp(260px,38vh,380px)}
 .sk-flow{cursor:pointer;transition:opacity .2s}
 .sk-flow.dim{opacity:.08}
 .sk-flow:hover{opacity:1!important}
@@ -385,8 +393,34 @@ table.dtab{width:100%;border-collapse:collapse;font-size:13.5px;min-width:660px}
   #chips{left:8px;right:8px;transform:none;bottom:14px;justify-content:flex-start;overflow-x:auto;border-radius:16px}
   #legend{display:none}
   #panel-inner{padding:20px 16px 70px}
-  .sankey{height:280px}
+  .sankey{height:240px}
+  .bar-row .bl{width:118px}
 }
+/* ===== V3：影像资料 / 客家地标 / 延伸阅读 ===== */
+.media-box{margin-top:12px;border:1px solid var(--gold-soft);border-radius:12px;padding:10px;background:rgba(255,252,244,.9)}
+.media-box .mb-t{font-size:13px;font-weight:600;color:var(--zhu);letter-spacing:.05em;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.media-box .mb-t::before{content:"";width:3px;height:13px;background:var(--gold);border-radius:1px}
+.media-box img{width:100%;border-radius:8px;cursor:pointer;border:1px solid var(--gold-soft);display:block;transition:transform .2s}
+.media-box img:hover{transform:scale(1.015)}
+.media-box .mb-c{font-size:12.5px;color:var(--ink);line-height:1.7;margin:8px 2px 0}
+.media-box .mb-s{font-size:11.5px;color:var(--ink-faint);margin:6px 2px 2px}
+.media-box .mb-s a{color:var(--zhu);text-decoration:none;font-weight:500}
+.media-box .mb-s a:hover{text-decoration:underline}
+.media-box .mb-f{margin:5px 2px;font-size:12.5px}
+.media-box .mb-f a{color:var(--ink);text-decoration:none}
+.media-box .mb-f a:hover{color:var(--zhu)}
+.ev-links{display:flex;flex-direction:column;gap:3px}
+.ev-links a{color:var(--zhu);text-decoration:none;font-weight:500}
+.ev-links a:hover{text-decoration:underline}
+.ev-note{font-size:11.5px;color:var(--ink-faint);display:block;margin-top:2px}
+/* 客家地标印章式标记 */
+.hkm{display:flex;align-items:center;gap:4px;cursor:pointer;padding:2px 6px 2px 4px;border-radius:6px;
+  background:rgba(252,246,230,.94);border:1px solid rgba(156,47,27,.45);box-shadow:0 1px 4px rgba(80,55,20,.22);
+  transition:transform .18s cubic-bezier(.34,1.56,.64,1),box-shadow .18s;white-space:nowrap}
+.hkm:hover{transform:translateY(-2px) scale(1.04);box-shadow:0 4px 10px rgba(80,55,20,.3)}
+.hkm .hk-t{font:600 10px "Kaiti SC","STKaiti","KaiTi",serif;color:#f7ecd9;background:#9c2f1b;border-radius:4px;padding:2px 5px;letter-spacing:.06em}
+.hkm .hk-n{font:500 11.5px "Kaiti SC","STKaiti","KaiTi",serif;color:#4a3414;letter-spacing:.03em}
+.hkm.hk-hide{display:none}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -563,6 +597,25 @@ const $=s=>document.querySelector(s);
 const BATCH_COLORS={1:"#9C2F1B",2:"#C05621",3:"#B8860B",4:"#2F6B4F",5:"#2E5E8C"};
 const TYPE_COLORS={origin:"#9C2F1B",transit:"#D8C08A",destination:"#1D9E75"};
 const CAT_NAMES={military:"军事",political:"政治",social:"社会",economic:"经济",culture:"文化"};
+/* ===== V3：影像资料库（事件/节点 链接资料，记录属性） ===== */
+const MEDIA={
+  "松口":{img:"assets/media/songkou.jpg",t:"松口古镇 · 韩江畔",c:"客家人下南洋的第一站。火船码头旧址沿江而建，'自古松口不认州'，无数客家先民由此登船出洋。",from:"南方+ / 广东省情网",link:"https://dfz.gd.gov.cn/zjgd/content/post_3121900.html",linkTxt:"广东省情网 · 客家人下南洋第一站"},
+  "梅州":{img:"assets/media/weilongwu.jpg",t:"梅州围龙屋 · 客家民居",c:"客家传统民居典范：堂屋居中、横屋两翼、围屋环抱，体现聚族而居的宗族伦理。",from:"公开影像资料",link:"https://baike.baidu.com/item/%E5%9B%B4%E9%BE%99%E5%B1%8B",linkTxt:"百度百科 · 围龙屋"},
+  "长汀":{img:"assets/media/tulou.jpg",t:"福建土楼 · 客家聚落",c:"客家人聚族而居的大型夯土民居，2008 年列入世界文化遗产。",from:"公开影像资料",link:"https://zh.wikipedia.org/wiki/%E7%A6%8F%E5%BB%BA%E5%9C%9F%E6%A5%BC",linkTxt:"维基百科 · 福建土楼"}
+};
+const MEDIA_EVENT={
+  "永嘉之乱":["https://zh.wikipedia.org/wiki/%E6%B0%B8%E5%98%89%E4%B9%8B%E4%B9%B1","维基百科 · 永嘉之乱","西晋末八王之乱后，匈奴刘聪攻破洛阳，中原士民南渡。"],
+  "安史之乱":["https://zh.wikipedia.org/wiki/%E5%AE%89%E5%8F%B2%E4%B9%8B%E4%B9%B1","维基百科 · 安史之乱","唐中叶藩镇叛乱，北方动荡，客家先民第二次大规模南迁。"],
+  "靖康之变":["https://zh.wikipedia.org/wiki/%E9%9D%96%E5%BA%B7%E4%B9%8B%E5%8F%98","维基百科 · 靖康之变","金灭北宋，高宗南渡，衣冠南渡促成第三次大迁徙。"],
+  "明末清初":["https://zh.wikipedia.org/wiki/%E5%AE%A2%E5%AE%B6%E4%BA%BA","维基百科 · 客家人","明末清初战乱与迁界，粤东客家人反迁赣南、闽西。"],
+  "下南洋":["https://dfz.gd.gov.cn/zjgd/content/post_3121900.html","广东省情网 · 松口：下南洋第一站","清中叶后土客械斗加剧，客家人经汕头、松口渡海赴南洋。"],
+  "客家人":["https://zh.wikipedia.org/wiki/%E5%AE%A2%E5%AE%B6%E4%BA%BA","维基百科 · 客家人","客家民系源流与五次大迁徙的学术综述。"]
+};
+const MEDIA_FILM=[
+  {t:"纪录片《客家人》· 央视",link:"https://search.bilibili.com/all?keyword=%E5%AE%A2%E5%AE%B6%E4%BA%BA%E7%BA%AA%E5%BD%95%E7%89%87"},
+  {t:"纪录片《下南洋》· 十集",link:"https://search.bilibili.com/all?keyword=%E4%B8%8B%E5%8D%97%E6%B4%8B%E7%BA%AA%E5%BD%95%E7%89%87"},
+  {t:"《客从何处来》· 寻根之旅",link:"https://search.bilibili.com/all?keyword=%E5%AE%A2%E4%BB%8E%E4%BD%95%E5%A4%84%E6%9D%A5%E7%BA%AA%E5%BD%95%E7%89%87"}
+];
 const CAT_COLORS_BG={military:"#C0553A",political:"#D9822B",social:"#4A7BA8",economic:"#3DBB8C",culture:"#9C73AE"};
 const fmt=n=>n>=10000?(n/10000).toFixed(n%10000===0?0:1)+"万":String(n);
 let batch=0,map=null,nodeMarkers=[],provMarkers=[],flyTimer=null,globeOn=true;
@@ -697,6 +750,56 @@ function initMap(){
     flyHome(0);
     /* v2：视口裁剪（LOD）——moveend/zoomend 后重算可见标记 */
     map.on("moveend",cullAll);map.on("zoomend",cullAll);
+    /* ===== V3：客家地标 + 古城/古镇区划叠加 ===== */
+    try{
+      const GUCITY=[
+        {name:"梅州古城 · 江北老城",c:[[116.090,24.284],[116.098,24.299],[116.112,24.303],[116.128,24.297],[116.124,24.285],[116.108,24.279],[116.093,24.281]]},
+        {name:"松口古镇 · 火船码头",c:[[116.298,24.313],[116.310,24.331],[116.330,24.340],[116.344,24.330],[116.338,24.315],[116.318,24.306]]}
+      ];
+      const gcFC={type:"FeatureCollection",features:GUCITY.map(g=>({type:"Feature",
+        properties:{name:g.name},geometry:{type:"Polygon",coordinates:[g.c]}}))};
+      map.addSource("gucity",{type:"geojson",data:gcFC});
+      map.addLayer({id:"gucity-fill",type:"fill",source:"gucity",
+        paint:{"fill-color":"#bd9a55","fill-opacity":["interpolate",["linear"],["zoom"],8.8,0,9.6,0.16]}},"routes-alt");
+      map.addLayer({id:"gucity-line",type:"line",source:"gucity",
+        paint:{"line-color":"#8a6a3f","line-width":1.4,"line-dasharray":[4,2.5],
+          "line-opacity":["interpolate",["linear"],["zoom"],8.8,0,9.6,0.9]}},"routes-alt");
+      map.on("click","gucity-fill",e=>{
+        const nm=e.features[0].properties.name;
+        showDetail(`<h3>${nm}</h3><div class="old">客家历史地理叠加（示意范围）</div>
+          <div class="desc">${nm==="梅州古城 · 江北老城"?"江北古城以中山街、凌风路为核心，宋代筑城，是客都千年文脉所在。":"松口古镇为客家人下南洋第一站，火船码头见证了清末民初数百万客家乡亲渡海出洋的历史。"}</div>
+          ${nm.includes("松口")?`<div class="media-box"><div class="mb-t">影像资料 · ${MEDIA["松口"].t}</div>
+            <img src="${MEDIA["松口"].img}" alt="${MEDIA["松口"].t}" loading="lazy" onclick="window.open('${MEDIA["松口"].link}','_blank')">
+            <div class="mb-c">${MEDIA["松口"].c}</div>
+            <div class="mb-s">${MEDIA["松口"].from} · <a href="${MEDIA["松口"].link}" target="_blank" rel="noopener">${MEDIA["松口"].linkTxt} ↗</a></div></div>`:""}`);});
+    }catch(e){console.warn("gucity",e)}
+    try{
+      const HAKKA=[
+        {name:"松口火船码头",ll:[116.326,24.327],t:"码头",d:"客家人下南洋的启航地，'自古松口不认州'。",imp:5},
+        {name:"中国客家博物馆",ll:[116.114,24.292],t:"博物馆",d:"国内唯一以客家历史文化为主题的专题博物馆。",imp:4},
+        {name:"梅州学宫",ll:[116.106,24.291],t:"古迹",d:"始建于北宋，岭南保存最完整的学宫之一。",imp:3},
+        {name:"人境庐",ll:[116.118,24.294],t:"故居",d:"晚清爱国诗人、外交家黄遵宪故居。",imp:3},
+        {name:"千佛塔",ll:[116.135,24.291],t:"古塔",d:"南汉铁塔，梅州千年地标。",imp:3},
+        {name:"花萼楼",ll:[116.676,24.174],t:"土楼",d:"大埔县，广东规模最大的圆形土楼。",imp:4},
+        {name:"泰安楼",ll:[116.693,24.362],t:"土楼",d:"大埔县，客家方形石楼典范。",imp:3},
+        {name:"侨乡村·南华又庐",ll:[116.075,24.255],t:"围龙屋",d:"梅县南口镇，围龙屋建筑群代表作。",imp:4}
+      ];
+      HAKKA.forEach(p=>{
+        const el=document.createElement("div");el.className="hkm";
+        el.innerHTML=`<span class="hk-t">${p.t}</span><span class="hk-n">${p.name}</span>`;
+        el.addEventListener("click",()=>{
+          showDetail(`<h3>${p.name}</h3><div class="old">${p.t} · 客家元素地标</div>
+            <div class="kv"><span class="k">坐标</span><span>${p.ll[0].toFixed(3)}°E, ${p.ll[1].toFixed(3)}°N</span></div>
+            <div class="desc">${p.d}</div>
+            ${MEDIA[p.name.includes("松口")?"松口":(p.name.includes("花萼楼")||p.name.includes("泰安楼")||p.name.includes("侨乡")?"梅州":"")]?`<div class="media-box"><div class="mb-t">影像资料 · ${MEDIA[p.name.includes("松口")?"松口":(p.name.includes("花萼楼")||p.name.includes("泰安楼")||p.name.includes("侨乡")?"梅州":"")].t}</div>
+              <img src="${MEDIA[p.name.includes("松口")?"松口":(p.name.includes("花萼楼")||p.name.includes("泰安楼")||p.name.includes("侨乡")?"梅州":"")].img}" alt="${p.name}" loading="lazy" onclick="window.open('${MEDIA[p.name.includes("松口")?"松口":(p.name.includes("花萼楼")||p.name.includes("泰安楼")||p.name.includes("侨乡")?"梅州":"")].link}','_blank')">
+              <div class="mb-c">${MEDIA[p.name.includes("松口")?"松口":(p.name.includes("花萼楼")||p.name.includes("泰安楼")||p.name.includes("侨乡")?"梅州":"")].c}</div>
+              <div class="mb-s">${MEDIA[p.name.includes("松口")?"松口":(p.name.includes("花萼楼")||p.name.includes("泰安楼")||p.name.includes("侨乡")?"梅州":"")].from} · <a href="${MEDIA[p.name.includes("松口")?"松口":(p.name.includes("花萼楼")||p.name.includes("泰安楼")||p.name.includes("侨乡")?"梅州":"")].link}" target="_blank" rel="noopener">${MEDIA[p.name.includes("松口")?"松口":(p.name.includes("花萼楼")||p.name.includes("泰安楼")||p.name.includes("侨乡")?"梅州":"")].linkTxt} ↗</a></div></div>`:""}`);});
+        new maplibregl.Marker({element:el,anchor:"bottom"}).setLngLat(p.ll).addTo(map);
+      });
+      /* 地标聚焦：城市级自动浮现（z≥9） */
+      map.on("zoom",()=>{const z=map.getZoom();document.querySelectorAll(".hkm").forEach(el=>el.classList.toggle("hk-hide",z<8.6));});
+    }catch(e){console.warn("hakka",e)}
   });
   /* 控件：导航 + 投影切换 */
   map.addControl(new maplibregl.NavigationControl({visualizePitch:true}),"top-right");
@@ -841,7 +944,12 @@ function selectNode(n){
     <div class="kv"><span class="k">坐标</span><span>${n.lon.toFixed(2)}°E, ${n.lat.toFixed(2)}°N</span></div>
     ${evTags?`<div class="evs">${evTags}</div>`:""}
     ${rtList?`<div class="routes">${rtList}</div>`:""}
-    <div class="desc">${n.desc}</div>`);
+    <div class="desc">${n.desc}</div>
+    ${MEDIA[n.name]?`<div class="media-box"><div class="mb-t">影像资料 · ${MEDIA[n.name].t}</div>
+      <img src="${MEDIA[n.name].img}" alt="${MEDIA[n.name].t}" loading="lazy" onclick="window.open('${MEDIA[n.name].link}','_blank')">
+      <div class="mb-c">${MEDIA[n.name].c}</div>
+      <div class="mb-s">${MEDIA[n.name].from} · <a href="${MEDIA[n.name].link}" target="_blank" rel="noopener">${MEDIA[n.name].linkTxt} ↗</a></div></div>`:""}
+    ${MEDIA_FILM.length?`<div class="media-box"><div class="mb-t">延伸影像</div>${MEDIA_FILM.map(f=>`<div class="mb-f"><a href="${f.link}" target="_blank" rel="noopener">▶ ${f.t} ↗</a></div>`).join("")}</div>`:""}`);
 }
 function selectRoute(rt){
   const ev=DATA.events.find(e=>e.id===rt.event);
@@ -926,6 +1034,7 @@ function renderHistory(){
         <div class="kv"><span class="k">主要去向</span><span>${ev.dest}</span></div>
         <div class="kv"><span class="k">历史意义</span><span>${ev.significance}</span></div>
         ${bgs.length?`<div class="kv"><span class="k">历史背景</span><span class="bg-tags" style="display:inline-flex">${bgTags}</span></div>`:""}
+        ${MEDIA_EVENT[ev.name]?`<div class="kv"><span class="k">延伸阅读</span><span class="ev-links"><a href="${MEDIA_EVENT[ev.name][0]}" target="_blank" rel="noopener">${MEDIA_EVENT[ev.name][1]} ↗</a><span class="ev-note">${MEDIA_EVENT[ev.name][2]}</span></span></div>`:""}
       </div>
     </div>`;
   }).join("");
@@ -937,9 +1046,9 @@ function renderStats(){
   const maxPop=Math.max(...DATA.events.map(e=>e.population));
   const bars=DATA.events.map(ev=>`
     <div class="bar-row">
-      <span class="bl"><b style="color:${BATCH_COLORS[ev.batch]}">第${ev.batch}次</b> ${ev.dynasty}</span>
+      <span class="bl"><b style="color:${BATCH_COLORS[ev.batch]}">第${ev.batch}次</b><em>${ev.dynasty} · ${ev.start}—${ev.end}</em></span>
       <span class="bw"><span class="bf" style="width:0;background:linear-gradient(90deg,${BATCH_COLORS[ev.batch]},${BATCH_COLORS[ev.batch]}cc);transition-delay:${ev.batch*120}ms" data-w="${ev.population/maxPop*100}"></span></span>
-      <span class="bv">${fmt(ev.population)} 人</span>
+      <span class="bv"><b>${fmt(ev.population)}</b><em>人</em></span>
     </div>`).join("");
   const minY=266,maxY=1912,totalY=maxY-minY;
   const dynBars=DATA.dynasties.map(d=>{
@@ -948,7 +1057,7 @@ function renderStats(){
   }).join("");
   const evPins=DATA.events.map(ev=>{
     const left=(ev.start-minY)/totalY*100;
-    return `<span class="ev-pin" style="left:${left}%;top:100%;background:${BATCH_COLORS[ev.batch]}" data-pin="${ev.batch}" title="${ev.name}"></span>`;
+    return `<span class="ev-pin" style="left:${left}%;background:${BATCH_COLORS[ev.batch]}" data-pin="${ev.batch}" title="${ev.name}（${ev.start}）"></span>`;
   }).join("");
   const sanks=renderSankey();
   const rows=DATA.events.map(ev=>{
@@ -964,10 +1073,9 @@ function renderStats(){
     <div class="stats-grid">
       <div class="stat-card"><h4>各次迁徙人口规模（人）</h4>${bars}</div>
       <div class="stat-card"><h4>朝代脉络与迁徙节点</h4>
-        <div class="dyn-wrap">${dynBars}</div>
-        <div style="position:relative;height:22px">${evPins}</div>
-        <div style="display:flex;justify-content:space-between;font-size:11.5px;color:var(--ink-faint);margin-top:4px"><span>266 西晋</span><span>1912 清亡</span></div>
-        <p style="font-size:12px;color:var(--ink-faint);margin-top:10px">点下方圆点可跳转对应迁徙地图：</p>
+        <div class="dyn-wrap">${dynBars}<div class="dyn-pins">${evPins}</div></div>
+        <div class="dyn-axis"><span>266 · 西晋</span><span>1912 · 清亡</span></div>
+        <p class="dyn-hint">点击下方圆点，跳转对应迁徙地图</p>
       </div>
       <div class="stat-card sankey-card"><h4>省际迁徙流向（桑基图）</h4><div class="sankey">${sanks}</div>
         <p class="sk-note">线宽代表迁徙人口规模 · 悬停可查看具体流向（单位：万人）</p>
@@ -976,7 +1084,7 @@ function renderStats(){
         <div class="tbl-wrap"><table class="dtab">
           <thead><tr><th data-k="batch">批次</th><th data-k="name">事件</th><th data-k="dyn">朝代</th><th data-k="year">年代</th><th data-k="pop">人口</th><th data-k="dest">主要去向</th><th data-k="rc">路线</th></tr></thead>
           <tbody>${rows}</tbody></table></div>
-        <p style="font-size:12px;color:var(--ink-faint);margin-top:8px">点击表头排序；人口栏内嵌比例条</p>
+        <p class="tbl-hint">点击表头排序 · 人口栏内嵌比例条</p>
       </div>
     </div>`);
 }
@@ -1090,26 +1198,36 @@ function afterPanelRender(){
 /* ---------- 关于 ---------- */
 function renderAbout(){
   openPanel(`<div class="panel-title">关于本项目</div>
-    <div class="panel-sub">空间数据库与 WebGIS · 客家迁徙可视化升级版</div>
+    <div class="panel-sub">客家五次大迁徙 · 迁徙长卷 V3（2026-08）</div>
     <div class="about-sec"><h4>项目简介</h4>
-      <p>以客家五次大迁徙为叙事主线，将地理节点、迁徙路线、历史背景与人口统计融为一幅可交互的「迁徙长卷」。本版基于 MapLibre 矢量地图渲染国风画卷底图，核心数据内联、引擎库与音频本地外链，双击即开。</p></div>
-    <div class="about-sec"><h4>五大功能</h4><ul>
-      <li>迁徙长卷地图：MapLibre 矢量底图（省界/河流/省名）+ 五次路线 + 节点交互，筛选条联动</li>
-      <li>历史长卷：五次迁徙的起因、规模、去向与史料背景</li>
-      <li>数据统计：人口柱状、朝代脉络、省际流向桑基、可排序明细表</li>
-      <li>智能搜索：地名 / 事件 / 背景一键定位</li>
-      <li>沉浸式国风：宣纸、朱砂、鎏金视觉体系，楷体排版</li></ul></div>
+      <p>以客家五次大迁徙为叙事主线，将地理节点、迁徙路线、历史背景、人口统计与影像资料融为一幅可交互的「迁徙长卷」。V3 在国风画卷底图之上，叠加客家地标与古城/古镇区划，并引入事件影像资料库，强化作品的「记录」属性。</p></div>
+    <div class="about-sec"><h4>功能架构</h4><ul>
+      <li>迁徙长卷地图：MapLibre 国风底图（分层设色地形/省界/水系/纸色蒙版）+ 五次迁徙路线 + 节点交互 + 批次筛选联动</li>
+      <li>客家地标层：松口火船码头、梅州古城、中国客家博物馆、花萼楼、泰安楼等 8 处；城市级（z≥9）浮现古城/古镇区划叠加（示意范围）</li>
+      <li>影像资料库：节点详情卡内嵌代表性影像与来源链接；事件卡附延伸阅读与纪录片入口</li>
+      <li>历史长卷 / 数据统计 / 智能搜索：迁徙史料、人口桑基与朝代脉络、地名事件一键定位</li>
+      <li>沉浸式国风：宣纸、朱砂、鎏金视觉体系，楷体排版，手绘符号</li></ul></div>
+    <div class="about-sec"><h4>技术架构（V3）</h4><ul>
+      <li>地图引擎：MapLibre GL JS v5.24（本地部署，BSD-3 许可），globe/平面双投影一键切换</li>
+      <li>渲染体系：地形符号层（木刻山 396 点位/树/沙丘/浪花）+ 分层设色地形 + DOM Marker 装饰（丝路驼队/帆船/牦牛等）+ 雅称题字 + 地标 54 处</li>
+      <li>工程手段：视口裁剪 LOD、标记防叠压（hover-z/簇错位）、懒加载、交互期地形降级、prefers-reduced-motion 全局降级</li>
+      <li>交付形态：单文件 HTML（0.8MB）+ 本地外链资源（vendor 引擎库 / assets 图片音频），数据内联、双击即用、零后端零配置</li></ul></div>
     <div class="about-sec"><h4>数据来源</h4><ul>
-      <li>CHGIS（中国历史地理信息系统）</li>
+      <li>CHGIS（中国历史地理信息系统）；省界：阿里云 DataV GeoJSON</li>
       <li>《晋书》《资治通鉴》《旧唐书》《宋史》《清史稿》等正史</li>
-      <li>《客家研究导论》《广东通志》《华侨华人百科全书》等文献</li>
-      <li>客家族谱与地方志资料；底图省界数据：阿里云 DataV GeoJSON</li></ul></div>
+      <li>《客家研究导论》《广东通志》《华侨华人百科全书》等文献；客家族谱与地方志</li>
+      <li>影像资料：南方+ / 广东省情网（松口）、公开影像资料（围龙屋/土楼）；纪录片入口指向 B 站公开检索</li></ul></div>
     <div class="about-sec"><h4>学术说明</h4>
       <p>本项目采用「中原南迁说」叙事框架。该学说认为客家先民源于中原汉人南迁；学界另有「土著融合说」等观点，主张客家民系是南迁汉人与南方土著长期融合的产物。迁徙人口为学界估算值，教学使用时请注明学术争议。</p>
-      <div class="note">⚠️ 本页数据为教学示例，人口数据为估计值；「南洋」以新加坡坐标示意整个东南亚，毛里求斯为图外远距离目的地。</div></div>
+      <div class="note">⚠️ 本页数据为教学示例，人口数据为估计值；「南洋」以新加坡坐标示意整个东南亚，毛里求斯为图外远距离目的地；古城/古镇区划为示意范围，非行政边界。</div></div>
     <div class="about-sec"><h4>技术栈</h4>
       <span class="badge">MapLibre GL</span><span class="badge">SVG 图表</span><span class="badge">纯原生 JS</span><span class="badge">单文件+本地资产</span><span class="badge">响应式</span>
-      <p style="margin-top:10px;font-size:13px;color:var(--ink-faint)">数据源自 mimo 版 PostgreSQL/PostGIS 教学数据库（8 表 + PostGIS 空间索引），本页为单文件演示版。</p></div>`);
+      <p style="margin-top:10px;font-size:13px;color:var(--ink-faint)">数据源自 mimo 版 PostgreSQL/PostGIS 教学数据库（8 表 + PostGIS 空间索引），本页为单文件演示版。</p></div>
+    <div class="about-sec"><h4>作者</h4>
+      <p style="margin:0">钟广锐（mzatun）· 嘉应学院双师型教师 · GIS / 空间智能 · 教育产品化实践者</p>
+      <p style="margin:6px 0 0"><a href="https://github.com/mzatun" target="_blank" rel="noopener" style="color:var(--zhu);font-weight:600">github.com/mzatun ↗</a>
+      <span style="margin-left:10px;font-size:12.5px;color:var(--ink-faint)">本项目开源在 <a href="https://github.com/mzatun/meizhou-hakka-heritage" target="_blank" rel="noopener" style="color:var(--ink-soft)">meizhou-hakka-heritage</a></span></p>
+      <div class="note">欢迎教学与学术使用；如需商用或二次开发，请联系作者。愿这幅长卷，陪你走一程客家的千年路。</div></div>`);
 }
 
 /* ---------- 模块切换 ---------- */
