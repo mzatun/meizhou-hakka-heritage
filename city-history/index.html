@@ -1,0 +1,1201 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>梅州 · 城市千年变迁｜MapLibre 2D/3D 故事地图</title>
+<link rel="stylesheet" href="vendor/maplibre-gl.css" />
+<style>
+  :root{
+    --paper:#efe7d2; --paper2:#f6efe0; --ink:#3f3220; --ink2:#6b5a3e;
+    --zhu:#9c2f1b; --zhu2:#c0412a; --gold:#bd9a55; --gold-soft:#e8d9b0;
+    --water:#5b8aa6; --jade:#5a8f7b;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;height:100%;font-family:"KaiTi","STKaiti","楷体",serif;color:var(--ink);}
+  #app{display:flex;height:100vh;width:100vw;overflow:hidden;background:var(--paper);}
+  #mapWrap{position:relative;flex:1;min-width:0;}
+  #map{position:absolute;inset:0;}
+  /* 标记标签 */
+  .lbl{font-family:"KaiTi","STKaiti",serif;color:var(--ink);text-shadow:0 0 3px #f6efe0,0 0 3px #f6efe0;pointer-events:none;white-space:nowrap;font-size:12px;}
+  .lbl-county{font-size:13px;font-weight:bold;color:#5a4a2e;}
+  .lbl-land{font-size:11px;color:#5a4a2e;}
+  .lbl-wall{font-size:12px;font-weight:bold;color:var(--zhu);background:rgba(246,239,224,.78);padding:1px 5px;border-radius:3px;border:1px solid var(--gold-soft);}
+  .lbl-river{font-size:10px;color:var(--water);opacity:.85;font-style:italic;}
+  /* 右侧面板 */
+  #right{width:430px;background:linear-gradient(180deg,#fbf4e4,#f1e7cf);border-left:2px solid var(--gold);display:flex;flex-direction:column;overflow:hidden;}
+  #rhead{padding:14px 18px 10px;border-bottom:1px solid var(--gold-soft);}
+  #rhead h1{margin:0;font-size:20px;letter-spacing:1px;color:var(--zhu);}
+  #rhead .sub{font-size:12px;color:var(--ink2);margin-top:3px;}
+  #modeBar{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;}
+  .btn{font-family:inherit;font-size:13px;padding:5px 12px;border:1px solid var(--gold);background:var(--paper2);color:var(--ink);border-radius:6px;cursor:pointer;transition:.15s;}
+  .btn:hover{background:var(--gold-soft);}
+  .btn.active{background:var(--zhu);color:#fdf6e7;border-color:var(--zhu);}
+  #timeline{padding:12px 18px;border-bottom:1px solid var(--gold-soft);}
+  #tlTop{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;}
+  #yearBig{font-size:26px;font-weight:bold;color:var(--zhu);}
+  #nameBig{font-size:15px;color:var(--ink2);}
+  #sliderRow{display:flex;align-items:center;gap:10px;}
+  #slider{flex:1;-webkit-appearance:none;height:5px;border-radius:3px;background:linear-gradient(90deg,var(--gold-soft),var(--gold));outline:none;}
+  #slider::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--zhu);border:3px solid #fdf6e7;cursor:pointer;}
+  #playBtn{font-size:13px;padding:4px 10px;}
+  #tabs{display:flex;border-bottom:1px solid var(--gold-soft);}
+  .tab{flex:1;text-align:center;padding:9px 0;font-size:14px;cursor:pointer;color:var(--ink2);}
+  .tab.active{color:var(--zhu);font-weight:bold;border-bottom:2px solid var(--zhu);background:rgba(189,154,85,.12);}
+  #rbody{flex:1;overflow-y:auto;padding:14px 18px;}
+  /* 六维卡片 */
+  .dim{margin-bottom:11px;padding:9px 12px;background:var(--paper2);border-left:3px solid var(--gold);border-radius:5px;}
+  .dim h3{margin:0 0 3px;font-size:14px;color:var(--zhu);display:flex;justify-content:space-between;}
+  .dim .v{font-size:13px;color:var(--ink);}
+  .dim .n{font-size:11px;color:var(--ink2);margin-top:2px;line-height:1.45;}
+  .desc{font-size:12.5px;line-height:1.6;color:var(--ink);background:rgba(156,47,27,.06);padding:9px 11px;border-radius:5px;margin-top:6px;}
+  /* 桑基图 */
+  #sankeyWrap{display:none;}
+  #sankeyWrap svg{width:100%;height:auto;}
+  .sk-note{font-size:11px;color:var(--ink2);line-height:1.5;background:rgba(189,154,85,.1);padding:8px 10px;border-radius:5px;margin-bottom:10px;}
+  #footnote{position:absolute;left:12px;bottom:10px;font-size:11px;color:rgba(63,50,32,.55);background:rgba(246,239,224,.7);padding:3px 8px;border-radius:4px;pointer-events:none;}
+  .legend{position:absolute;right:12px;bottom:12px;background:rgba(246,239,224,.85);border:1px solid var(--gold-soft);border-radius:6px;padding:8px 10px;font-size:11px;color:var(--ink);line-height:1.7;}
+  .legend i{display:inline-block;width:12px;height:12px;border-radius:2px;margin-right:5px;vertical-align:-1px;}
+  /* maplibre 控件配色 */
+  .maplibregl-ctrl-group{background:var(--paper2);border:1px solid var(--gold-soft);}
+  /* ===== 故事层（新增） ===== */
+  #storyCard{position:absolute;left:12px;top:86px;width:330px;max-height:66vh;overflow-y:auto;background:rgba(251,244,228,.96);border:1px solid var(--gold);border-radius:8px;box-shadow:0 8px 28px rgba(74,52,20,.22);display:none;z-index:30;padding:0;}
+  #storyCard .sc-head{padding:10px 14px 8px;border-bottom:1px solid var(--gold-soft);display:flex;justify-content:space-between;align-items:flex-start;position:sticky;top:0;background:linear-gradient(180deg,#fbf4e4,#f5ecd6);border-radius:8px 8px 0 0;}
+  #storyCard .sc-title{font-size:15px;color:var(--zhu);font-weight:bold;letter-spacing:1px;}
+  #storyCard .sc-meta{font-size:11px;color:var(--ink2);margin-top:2px;}
+  #storyCard .sc-close{cursor:pointer;font-size:16px;color:var(--ink2);border:1px solid var(--gold);border-radius:4px;width:24px;height:24px;text-align:center;line-height:20px;background:var(--paper2);flex-shrink:0;}
+  #storyCard .sc-close:hover{background:var(--zhu);color:#fdf6e7;}
+  #storyCard .sc-body{padding:10px 14px 14px;font-size:12.5px;line-height:1.75;color:var(--ink);}
+  #storyCard .sc-body p{margin:0 0 8px;}
+  #storyCard .sc-stats{margin:6px 0;padding:7px 10px;background:rgba(189,154,85,.12);border-left:3px solid var(--gold);border-radius:4px;font-size:12px;line-height:1.7;}
+  #storyCard .sc-cb{color:var(--zhu);font-size:12px;}
+  #storyCard .sc-src{margin-top:9px;padding-top:7px;border-top:1px dashed var(--gold-soft);font-size:11px;color:var(--ink2);}
+  #storyCard .sc-src a{color:var(--water);text-decoration:none;font-weight:bold;}
+  #storyCard .sc-src a:hover{text-decoration:underline;}
+  #storyCard .sc-fig{margin:8px 0 4px;padding:0;}
+  #storyCard .sc-fig img{width:100%;max-height:190px;object-fit:cover;border-radius:6px;border:1px solid var(--gold-soft);box-shadow:0 2px 8px rgba(74,52,20,.15);}
+  #storyCard .sc-fig figcaption{font-size:10.5px;color:var(--ink2);text-align:center;margin-top:3px;}
+  #storyCard .sc-btn{display:inline-block;margin-top:8px;font-size:12px;padding:4px 12px;border:1px solid var(--zhu);color:var(--zhu);background:rgba(156,47,27,.06);border-radius:14px;cursor:pointer;}
+  #storyCard .sc-btn:hover{background:var(--zhu);color:#fdf6e7;}
+  .lbl-story{cursor:pointer;font-size:11px;color:#6a4a1f;background:rgba(251,244,228,.85);border:1px solid var(--gold);border-radius:10px;padding:1px 7px;transition:.15s;display:flex;align-items:center;gap:3px;white-space:nowrap;max-width:170px;overflow:hidden;text-overflow:ellipsis;}
+  .lbl-story:hover{background:var(--zhu);color:#fdf6e7;border-color:var(--zhu);}
+  .lbl-story img{width:17px;height:17px;vertical-align:middle;pointer-events:none;flex-shrink:0;}
+  .lbl-story span{overflow:hidden;text-overflow:ellipsis;}
+  .lbl-story.person{border-color:var(--water);background:rgba(241,247,244,.92);}
+  /* 县区故事卡 */
+  .ct-tl-wrap{background:rgba(189,154,85,.08);border-radius:6px;padding:7px 10px;margin:7px 0;max-height:210px;overflow-y:auto;}
+  .ct-tl{display:flex;gap:8px;align-items:baseline;padding:3px 0;border-bottom:1px dashed rgba(189,154,85,.35);font-size:11.5px;line-height:1.5;}
+  .ct-tl:last-child{border-bottom:none;}
+  .ct-tl .ct-yr{color:var(--zhu);font-weight:bold;font-size:12px;flex-shrink:0;width:46px;}
+  .ct-tl .ct-ev{color:var(--ink);flex-shrink:0;}
+  .ct-tl .ct-nt{color:var(--ink2);}
+  .ct-tl.on{background:var(--zhu);border-radius:4px;}
+  .ct-tl.on .ct-yr,.ct-tl.on .ct-ev,.ct-tl.on .ct-nt{color:#fdf6e7;}
+  .ct-poi-wrap{margin:7px 0;}
+  .ct-poi{cursor:pointer;display:inline-block;margin:3px 4px 0 0;padding:3px 10px;background:var(--paper2);border:1px solid var(--gold-soft);border-radius:12px;font-size:11.5px;color:var(--ink);transition:.12s;}
+  .ct-poi:hover{background:var(--gold);color:#fdf6e7;border-color:var(--gold);}
+  .ct-poi i{font-style:normal;font-size:10px;color:var(--ink2);margin-left:4px;}
+  .ct-poi:hover i{color:#fdf6e7;}
+  #ctPoiStory{margin-top:6px;padding:7px 10px;background:rgba(91,138,166,.1);border-left:3px solid var(--water);border-radius:4px;font-size:11.5px;line-height:1.6;color:var(--ink);min-height:20px;}
+  /* 全市域县区截面面板 */
+  .snap-wrap{margin-top:12px;padding:9px 12px;background:linear-gradient(180deg,#fdf9ee,#f6eeda);border:1px solid var(--gold);border-radius:8px;}
+  .snap-title{font-size:13px;color:var(--zhu);margin:0 0 6px;letter-spacing:1px;}
+  .snap-title span{font-size:11px;color:var(--ink2);}
+  #snapList{max-height:300px;overflow-y:auto;}
+  .snap-row{display:flex;align-items:baseline;gap:6px;padding:4px 6px;border-radius:4px;cursor:pointer;font-size:11.5px;transition:.12s;}
+  .snap-row:hover{background:var(--gold-soft);}
+  .snap-row .snap-name{color:var(--ink);font-weight:bold;flex-shrink:0;min-width:74px;}
+  .snap-row .snap-st{flex-shrink:0;font-size:10px;padding:1px 7px;border-radius:9px;width:44px;text-align:center;}
+  .snap-row .snap-st.est{background:var(--zhu);color:#fdf6e7;}
+  .snap-row .snap-st.city{background:var(--gold);color:#fdf6e7;}
+  .snap-row .snap-st.pre{background:#b8c4b8;color:#fdf6e7;}
+  .snap-row .snap-st.none{background:#d9d2c2;color:var(--ink2);}
+  .snap-row .snap-note{color:var(--ink2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  /* 建县时序条 */
+  #estBarWrap{margin-top:7px;padding:7px 10px 5px;background:rgba(189,154,85,.1);border:1px solid var(--gold-soft);border-radius:6px;}
+  #estBarTitle{font-size:10.5px;color:var(--ink2);margin-bottom:5px;letter-spacing:.5px;}
+  #estBar{position:relative;height:34px;}
+  .est-track{position:absolute;top:15px;left:1%;right:1%;height:3px;background:linear-gradient(90deg,#e0cf9d,#bd9a55);border-radius:2px;}
+  .est-mark{position:absolute;top:4px;transform:translateX(-50%);cursor:pointer;display:flex;flex-direction:column;align-items:center;font-size:9.5px;color:var(--ink2);z-index:5;transition:.12s;}
+  .est-mark .dot{width:10px;height:10px;border-radius:50%;background:var(--paper2);border:2px solid var(--gold);box-shadow:0 1px 3px rgba(74,52,20,.25);}
+  .est-mark.est .dot{background:var(--zhu);border-color:var(--zhu);}
+  .est-mark:hover .dot{transform:scale(1.35);}
+  .est-mark span{margin-top:2px;white-space:nowrap;text-shadow:0 0 3px #f6efe0,0 0 3px #f6efe0;}
+  .est-mark:hover span{color:var(--zhu);font-weight:bold;}
+  #estCursor{position:absolute;top:0;width:2px;height:34px;background:rgba(156,47,27,.7);border-radius:1px;pointer-events:none;z-index:6;}
+  #estCursor::before{content:"";position:absolute;top:-3px;left:-3px;width:8px;height:8px;background:var(--zhu);border-radius:50%;box-shadow:0 0 4px rgba(156,47,27,.6);}
+  #estScale{display:flex;justify-content:space-between;font-size:9px;color:var(--ink2);margin-top:2px;padding:0 1%;}
+  /* 底图年代模式标签 */
+  #eraMode{font-size:10.5px;color:var(--zhu);border:1px solid var(--gold-soft);border-radius:10px;padding:1px 9px;background:rgba(156,47,27,.06);letter-spacing:.5px;flex-shrink:0;}
+  /* 古地图控制面板 */
+  #oldMapPanel{position:absolute;left:12px;bottom:96px;width:238px;background:rgba(251,244,228,.95);border:1px solid var(--gold);border-radius:8px;box-shadow:0 6px 18px rgba(74,52,20,.2);z-index:24;font-size:11.5px;color:var(--ink);}
+  .omp-head{display:flex;justify-content:space-between;align-items:center;padding:6px 10px;background:linear-gradient(180deg,#fbf4e4,#f1e7cf);border-radius:8px 8px 0 0;font-weight:bold;color:var(--zhu);letter-spacing:.5px;cursor:pointer;}
+  .omp-coll{font-size:10.5px;color:var(--ink2);font-weight:normal;}
+  .omp-body{padding:8px 10px;display:flex;flex-direction:column;gap:7px;}
+  .omp-body.hidden{display:none;}
+  .omp-row{display:flex;align-items:center;gap:6px;font-size:11.5px;}
+  .omp-row input[type=range]{flex:1;height:4px;}
+  .omp-row input[type=checkbox]{accent-color:var(--zhu);}
+  .omp-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;}
+  .omp-btn{font-family:inherit;font-size:10.5px;padding:3px 0;border:1px solid var(--gold-soft);background:var(--paper2);color:var(--ink);border-radius:5px;cursor:pointer;transition:.12s;}
+  .omp-btn:hover{background:var(--gold);color:#fdf6e7;border-color:var(--gold);}
+  .omp-btn[data-act=reset]{grid-column:span 4;background:rgba(156,47,27,.08);color:var(--zhu);}
+  .omp-coords{font-size:9.5px;color:var(--ink2);font-family:Consolas,monospace;background:rgba(189,154,85,.08);padding:4px 6px;border-radius:4px;word-break:break-all;}
+  .omp-note{font-size:9.5px;color:var(--ink2);}
+  /* 城区范围图层（动画展示城市扩张） */
+  #urbanLabel{position:absolute;left:50%;bottom:24px;transform:translateX(-50%);background:rgba(246,239,224,.9);border:1px solid var(--gold);border-radius:14px;padding:3px 14px;font-size:12px;color:var(--zhu);letter-spacing:1px;pointer-events:none;display:none;z-index:20;box-shadow:0 2px 8px rgba(74,52,20,.15);}
+  /* 古地名铭牌（地图左上，仿古竖排） */
+  #placePlate{position:absolute;left:12px;top:12px;background:linear-gradient(160deg,rgba(251,244,228,.96),rgba(241,231,207,.92));border:1px solid var(--gold);border-left:4px solid var(--zhu);border-radius:4px 8px 8px 4px;padding:8px 14px 7px;box-shadow:0 6px 18px rgba(74,52,20,.18);display:flex;align-items:center;gap:10px;z-index:25;pointer-events:none;}
+  #plateName{font-size:22px;font-weight:bold;color:var(--zhu);letter-spacing:3px;writing-mode:vertical-rl;line-height:1.15;}
+  #plateRight{display:flex;flex-direction:column;gap:2px;}
+  #plateRight .pr1{font-size:12px;color:var(--ink);letter-spacing:1px;}
+  #plateRight .pr2{font-size:10.5px;color:var(--ink2);}
+  #plateRight .pr3{font-size:10px;color:var(--water);}
+  /* 时间轴节点刻度 */
+  #tickRow{display:flex;justify-content:space-between;margin-top:5px;padding:0 2px;gap:2px;}
+  #tickRow span{cursor:pointer;padding:2px 6px;border-radius:10px;font-size:10.5px;color:var(--ink2);border:1px solid transparent;transition:.12s;user-select:none;}
+  #tickRow span:hover{background:var(--gold-soft);border-color:var(--gold);}
+  #tickRow span.on{background:var(--zhu);color:#fdf6e7;border-color:var(--zhu);font-weight:bold;}
+  #storyLegend{position:absolute;left:12px;bottom:52px;background:rgba(246,239,224,.88);border:1px solid var(--gold-soft);border-radius:6px;padding:6px 9px;font-size:10.5px;color:var(--ink);line-height:1.8;}
+  #storyLegend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;vertical-align:-1px;}
+  .btn.storyOn{background:var(--gold);color:#fdf6e7;border-color:var(--gold);}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="mapWrap">
+    <div id="map"></div>
+    <div id="placePlate">
+      <div id="plateName">梅州</div>
+      <div id="plateRight">
+        <div class="pr1" id="plateSub">北宋 · 州</div>
+        <div class="pr2" id="plateNote">土城初筑 · 城市肇始</div>
+        <div class="pr3" id="plateTip">拖动时间轴 · 观城垣与城区之变迁</div>
+      </div>
+    </div>
+    <div id="urbanLabel"></div>
+    <div id="storyCard"></div>
+    <div id="storyLegend" style="display:none">
+      <div><i style="background:rgba(156,47,27,.6)"></i>坊巷 AOI（点击查看故事）</div>
+      <div><i style="background:var(--water)"></i>城门 / 建筑 / 人物 POI（点击查看故事）</div>
+    </div>
+    <div id="oldMapPanel">
+      <div class="omp-head"><span>🗺 古地图 · 控制</span><span class="omp-coll" id="ompColl">▾ 收起</span></div>
+      <div class="omp-body" id="ompBody">
+        <label class="omp-row"><input type="checkbox" id="ompOn"/> 叠加古地图（需时开启）</label>
+        <div class="omp-row">底图 <select id="ompMap" style="flex:1;font-family:inherit;font-size:11px;padding:2px 4px;border:1px solid var(--gold-soft);border-radius:4px;background:var(--paper2);color:var(--ink);">
+          <option value="jyy">舆地图 · 州域（清）</option>
+          <option value="city">城池图 · 州城（咸丰）</option>
+        </select></div>
+        <div class="omp-row">透明度 <input type="range" id="ompOpacity" min="5" max="100" value="62"/><span id="ompOpVal">62%</span></div>
+        <div class="omp-row omp-grid">
+          <button class="omp-btn" data-act="n">↑北移</button>
+          <button class="omp-btn" data-act="w">←西移</button>
+          <button class="omp-btn" data-act="e">东移→</button>
+          <button class="omp-btn" data-act="s">↓南移</button>
+          <button class="omp-btn" data-act="zo">放大</button>
+          <button class="omp-btn" data-act="zi">缩小</button>
+          <button class="omp-btn" data-act="reset">重置</button>
+        </div>
+        <div class="omp-row omp-coords" id="ompCoords"></div>
+        <div class="omp-row omp-note">步进 0.002°≈200m · 设置自动保存</div>
+      </div>
+    </div>
+    <div class="legend">
+      <div><i style="background:#e9dcc0"></i>区县界</div>
+      <div><i style="background:#5b8aa6"></i>河流（真实水系）</div>
+      <div><i style="background:rgba(156,47,27,.55)"></i>城垣/城区</div>
+      <div><i style="background:#8a6a45"></i>地标</div>
+    </div>
+    <div id="footnote">技术方案：MapLibre GL（同 CBDB 仕途流場底圖思路）· 真实底圖=DataV 行政邊界 + OSM 河流 · 2D/3D 雙模式</div>
+  </div>
+
+  <div id="right">
+    <div id="rhead">
+      <h1>梅州 · 城市千年变迁</h1>
+      <div class="sub">從程鄉到世界客都 · 城市 / 人口 / 人文 / 經濟 / 社會 / 文化</div>
+      <div id="modeBar">
+        <button class="btn active" id="btn2D">2D 平面</button>
+        <button class="btn" id="btn3D">3D 地形</button>
+        <button class="btn" id="btnFocus">聚焦老城</button>
+        <button class="btn" id="btnAll">全景</button>
+        <button class="btn" id="btnOldMap">🗺 古地图</button>
+        <button class="btn" id="btnStory">📜 故事层</button>
+      </div>
+    </div>
+
+    <div id="timeline">
+      <div id="tlTop">
+        <span id="yearBig">1052</span>
+        <span id="nameBig">梅州 · 土城</span>
+        <span id="eraMode">· 历史示意</span>
+        <span id="tlHint" style="font-size:10.5px;color:var(--ink2);margin-left:auto;">▸ 拖动滑块 / 点击年份节点 手动控制</span>
+      </div>
+      <div id="sliderRow">
+        <button class="btn" id="playBtn">▶ 播放</button>
+        <input type="range" id="slider" min="0" max="12" value="3" step="1" />
+      </div>
+      <div id="tickRow"></div>
+      <div id="estBarWrap">
+        <div id="estBarTitle">⛳ 各县区建县时序 · 随滑块移动，点标记看详情</div>
+        <div id="estBar"><div class="est-track"></div><div id="estCursor"></div></div>
+        <div id="estScale"><span>-200</span><span>0</span><span>500</span><span>1000</span><span>1500</span><span>2026</span></div>
+      </div>
+    </div>
+
+    <div id="tabs">
+      <div class="tab active" data-tab="city">城市变迁</div>
+      <div class="tab" data-tab="sankey">科举桑基（CBDB）</div>
+    </div>
+
+    <div id="rbody">
+      <div id="cityWrap">
+        <div class="dim"><h3>政區地位 <span id="d-level"></span></h3><div class="v" id="d-name"></div></div>
+        <div class="dim"><h3>城垣擴張</h3><div class="v" id="d-wall"></div><div class="n" id="d-wall-n"></div></div>
+        <div class="dim"><h3>人口</h3><div class="v" id="d-pop"></div><div class="n" id="d-pop-n"></div></div>
+        <div class="dim"><h3>人文 · 科舉</h3><div class="v" id="d-cul"></div><div class="n" id="d-cul-n"></div></div>
+        <div class="dim"><h3>經濟</h3><div class="v" id="d-eco"></div></div>
+        <div class="dim"><h3>社會</h3><div class="v" id="d-soc"></div></div>
+        <div class="dim"><h3>文化</h3><div class="v" id="d-cul2"></div></div>
+        <div class="desc" id="d-desc"></div>
+        <div class="snap-wrap">
+          <h3 class="snap-title">全市域 · 各县区建置截面 <span id="snapYear"></span></h3>
+          <div id="snapList"><div style="font-size:11px;color:var(--ink2);padding:4px">随时间轴联动 · 点击行查看县区详情</div></div>
+        </div>
+      </div>
+
+      <div id="sankeyWrap">
+        <div class="sk-note">
+          <b>數據說明：</b>左節點「梅州籍進士」按《采芹錄》清代嘉應州文進士 67 人分配至各任官地；其中
+          <b>李象元→山東（CBDB 驗證）</b>、<b>黃遵憲→海外（CBDB 驗證）</b>為實證錨點，其餘為代表性估算，
+          待 CBDB 全量抽取後校準。流寬=人數。
+        </div>
+        <svg id="sankey" viewBox="0 0 360 300"></svg>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="vendor/maplibre-gl.js"></script>
+<script src="meizhou-geo.js"></script>
+<script src="meizhou-rivers.js"></script>
+<script src="meizhou-data.js"></script>
+<script src="meizhou-walls-geo.js"></script>
+<script src="meizhou-story.js"></script>
+<script>
+/* ============================================================
+ * 梅州城市千年变迁 · MapLibre 2D/3D 故事地圖
+ * 真实底图：DataV 行政边界(MEIZHOU_GEO) + OSM 河流(MEIZHOU_RIVERS)
+ * 2D = 俯视平面；3D = 傾斜 + DEM 地形 + 城垣擠出
+ * ============================================================ */
+const map = new maplibregl.Map({
+  container:"map",
+  style:{
+    version:8,
+    sources:{
+      boundary:{ type:"geojson", data: MEIZHOU_GEO },
+      rivers:{ type:"geojson", data: MEIZHOU_RIVERS },
+      walls:{ type:"geojson", data:{ type:"FeatureCollection", features:[] } }
+    },
+    layers:[
+      { id:"bg", type:"background", paint:{ "background-color":"#efe7d2" } },
+      { id:"county-fill", type:"fill", source:"boundary",
+        paint:{ "fill-color":"#e9dcc0", "fill-opacity":0.85 } },
+      { id:"county-line", type:"line", source:"boundary",
+        paint:{ "line-color":"#a98e5f", "line-width":1.1 } },
+      { id:"river", type:"line", source:"rivers",
+        paint:{ "line-color":"#5b8aa6", "line-width":[
+          "interpolate",["linear"],["zoom"],
+          8,0.6, 11,1.6, 14,3.5
+        ], "line-opacity":0.9 } },
+      { id:"wall-fill", type:"fill", source:"walls",
+        paint:{ "fill-color":["case",["==",["get","ancient"],1],"#9c2f1b","#bd9a55"], "fill-opacity":0.28 } },
+      { id:"wall-line", type:"line", source:"walls",
+        paint:{ "line-color":["case",["get","ancient"],"#9c2f1b","#bd9a55"], "line-width":2.2 } },
+      { id:"wall-3d", type:"fill-extrusion", source:"walls", layout:{visibility:"none"},
+        paint:{ "fill-extrusion-color":["case",["==",["get","ancient"],1],"#9c2f1b","#bd9a55"],
+                 "fill-extrusion-height":["get","height"], "fill-extrusion-opacity":0.78,
+                 "fill-extrusion-base":0 } },
+      { id:"lm-circle", type:"circle", source:"walls",
+        paint:{ "circle-radius":3.5, "circle-color":"#8a6a45", "circle-stroke-color":"#f5efe2", "circle-stroke-width":1 } }
+    ]
+  },
+  center:[116.111,24.309], zoom:9.4, pitch:0, bearing:0, attributionControl:false
+});
+
+map.addControl(new maplibregl.NavigationControl({visualizePitch:true}),"top-left");
+map.addControl(new maplibregl.ScaleControl({maxWidth:120,unit:"metric"}),"bottom-left");
+
+map.on("load", ()=>{
+  injectCountyEstYear();
+  buildCountyLabels();
+  renderTimeline();   // 初始渲染
+});
+
+/* ---------- 县区"建县点亮"（estYear 属性注入 + 动态透明度） ---------- */
+const COUNTY_EST_YEAR = { 441481:331, 441422:413, 441424:-195, 441426:1562, 441427:1633, 441423:1628, 441402:479, 441403:479 };
+function injectCountyEstYear(){
+  try{
+    (window.MEIZHOU_GEO.features||[]).forEach(f=>{
+      const ad = f.properties && f.properties.adcode;
+      f.properties.estYear = COUNTY_EST_YEAR[ad] || 479;
+    });
+    map.getSource("boundary").setData(window.MEIZHOU_GEO);
+  }catch(e){ console.warn("estYear 注入失败", e); }
+}
+function updateCountyGlow(){
+  try{
+    const year = T[idx].year;
+    map.setPaintProperty("county-fill","fill-opacity",
+      ["case",["<=",["get","estYear"],year],0.85,0.13]);
+  }catch(e){}
+}
+
+/* ---------- 古地图集（按需懒加载 + 双图切换 + 透明度/坐标微调，localStorage 记忆） ---------- */
+const OLD_MAPS = [
+  { id:"jyy",  name:"舆地图 · 州域", url:"images/jiaying_old_map.jpg",
+    coords:[[116.001,24.3959],[116.221,24.3959],[116.221,24.2201],[116.001,24.2201]] },
+  { id:"city", name:"城池图 · 州城", url:"images/jiaying_city_map.jpg",
+    coords:[[116.0988,24.3165],[116.122,24.3165],[116.122,24.3005],[116.0988,24.3005]] }
+];
+function getOldMap(){ return OLD_MAPS.find(m=>m.id===oldMapId)||OLD_MAPS[0]; }
+function omLoad(){ try{ return JSON.parse(localStorage.getItem("mz_oldmap")||"null"); }catch(e){ return null; } }
+function omSave(){ try{ localStorage.setItem("mz_oldmap", JSON.stringify({coords:oldMapCoords,opacity:oldMapOpacity,on:oldMapOn,mapId:oldMapId})); }catch(e){} }
+const _om = omLoad();
+let oldMapId = _om && _om.mapId ? _om.mapId : "jyy";
+const OLD_MAP_DEFAULT = getOldMap().coords.map(p=>[p[0],p[1]]);
+let oldMapCoords = _om && _om.coords ? _om.coords : OLD_MAP_DEFAULT.map(p=>[p[0],p[1]]);
+let oldMapOpacity = _om && typeof _om.opacity==="number" ? _om.opacity : 0.62;
+let oldMapOn = _om ? !!_om.on : false;   // 默认不叠加，需要时开启
+
+function ensureOldMapLayer(cb){
+  if(map.getSource("oldmap")){ cb&&cb(); return; }
+  const m = getOldMap();
+  const tryAdd = ()=>{
+    try{
+      map.addSource("oldmap",{ type:"image", url:m.url, coordinates:oldMapCoords });
+      map.addLayer({ id:"oldmap-raster", type:"raster", source:"oldmap",
+        paint:{ "raster-opacity":oldMapOpacity, "raster-resampling":"linear" } }, "county-fill");
+      cb&&cb();
+    }catch(err){ setTimeout(tryAdd, 300); }
+  };
+  tryAdd();
+}
+function switchOldMap(id){
+  oldMapId = id;
+  // image source 不能换 url → 移除重建
+  if(map.getSource("oldmap")){
+    try{ map.removeLayer("oldmap-raster"); map.removeSource("oldmap"); }catch(e){}
+  }
+  const m = getOldMap();
+  oldMapCoords = m.coords.map(p=>[p[0],p[1]]);
+  const mode = T[idx].year>=1912 ? "modern" : T[idx].year>=1385 ? "mingqing" : "ancient";
+  if(oldMapOn) ensureOldMapLayer(()=>applyOldMap(mode));
+  updateOldMapUI(); omSave();
+}
+function applyOldMap(mode){
+  if(!map.getLayer("oldmap-raster")) return;
+  try{
+    const vis = (mode==="modern" || !oldMapOn) ? "none" : "visible";
+    map.setLayoutProperty("oldmap-raster","visibility", vis);
+    if(vis==="visible") map.setPaintProperty("oldmap-raster","raster-opacity", oldMapOpacity);
+  }catch(e){}
+}
+function setOldMapCoords(){
+  const src = map.getSource("oldmap");
+  if(src){ try{ src.setCoordinates(oldMapCoords); }catch(e){} }
+}
+function adjustOldMap(act){
+  const c = oldMapCoords;
+  const cx=(c[0][0]+c[2][0])/2, cy=(c[0][1]+c[2][1])/2, d=0.002;
+  if(act==="n") c.forEach(p=>p[1]+=d);
+  if(act==="s") c.forEach(p=>p[1]-=d);
+  if(act==="e") c.forEach(p=>p[0]+=d);
+  if(act==="w") c.forEach(p=>p[0]-=d);
+  if(act==="zo"){ const f=1.05; c.forEach(p=>{ p[0]=cx+(p[0]-cx)*f; p[1]=cy+(p[1]-cy)*f; }); }
+  if(act==="zi"){ const f=0.95; c.forEach(p=>{ p[0]=cx+(p[0]-cx)*f; p[1]=cy+(p[1]-cy)*f; }); }
+  if(act==="reset"){ oldMapCoords = OLD_MAP_DEFAULT.map(p=>[p[0],p[1]]); }
+  setOldMapCoords(); updateOldMapUI(); omSave();
+}
+function updateOldMapUI(){
+  document.getElementById("ompOn").checked = oldMapOn;
+  document.getElementById("ompOpacity").value = Math.round(oldMapOpacity*100);
+  document.getElementById("ompOpVal").textContent = Math.round(oldMapOpacity*100)+"%";
+  document.getElementById("ompMap").value = oldMapId;
+  document.getElementById("ompCoords").innerHTML =
+    "NW["+oldMapCoords[0][0].toFixed(3)+","+oldMapCoords[0][1].toFixed(3)+"] SE["+oldMapCoords[2][0].toFixed(3)+","+oldMapCoords[2][1].toFixed(3)+"]";
+}
+
+/* ---------- 底图时间态化：现代底图随年代淡出，保持地图与叙事同一时间锚 ---------- */
+function applyEraStyle(year){
+  // 模式：1912+ 现代底图；1385~1911 明清淡化；<1385 历史示意（只留山河骨架）
+  const mode = year>=1912 ? "modern" : year>=1385 ? "mingqing" : "ancient";
+  const label = mode==="modern" ? "现代底图" : mode==="mingqing" ? "明清淡化" : "历史示意";
+  const badge = document.getElementById("eraMode");
+  if(badge) badge.textContent = "· "+label;
+  // 古地图随模式显隐（现代隐藏）；未开启时不加载
+  if(oldMapOn) ensureOldMapLayer(()=>applyOldMap(mode));
+  else if(map.getLayer("oldmap-raster")){
+    try{ map.setLayoutProperty("oldmap-raster","visibility","none"); }catch(e){}
+  }
+  try{
+    if(mode==="modern"){
+      map.setLayoutProperty("county-fill","visibility","visible");
+      map.setLayoutProperty("county-line","visibility","visible");
+      map.setPaintProperty("county-fill","fill-opacity",
+        ["case",["<=",["get","estYear"],year],0.85,0.13]);  // 保留"建县点亮"
+      map.setPaintProperty("county-line","line-opacity",1);
+      showCountyLabels(true);
+    } else if(mode==="mingqing"){
+      map.setLayoutProperty("county-fill","visibility","visible");
+      map.setLayoutProperty("county-line","visibility","visible");
+      map.setPaintProperty("county-fill","fill-opacity",
+        ["case",["<=",["get","estYear"],year],0.32,0.08]);   // 淡化+弱化点亮
+      map.setPaintProperty("county-line","line-opacity",0.35);
+      showCountyLabels(false);   // 隐藏现代县名标签
+    } else {
+      map.setLayoutProperty("county-fill","visibility","none");   // 历史示意：隐藏现代区县界
+      map.setLayoutProperty("county-line","visibility","none");
+      showCountyLabels(false);
+    }
+  }catch(e){}
+}
+function showCountyLabels(show){
+  countyMarkers.forEach(m=>{ try{ m.getElement().style.display = show ? "" : "none"; }catch(e){} });
+}
+
+/* DEM 地形（免費 Terrarium，無密鑰）：首次切 3D 時按需加載，
+   避免 file:// 打開時因網絡瓦片導致加載掛起；離線時靜默降級為平面傾斜 */
+let demAdded=false;
+function ensureDem(){
+  if(demAdded) return;
+  demAdded=true;
+  try{
+    map.addSource("dem",{
+      type:"raster-dem", tileSize:256, encoding:"terrarium", maxzoom:13,
+      tiles:["https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png"]
+    });
+  }catch(e){ console.warn("DEM 源添加失敗（離線）", e); }
+}
+
+/* ---------- 县名標籤（HTML Marker，離線可用） ---------- */
+let countyMarkers=[];
+function buildCountyLabels(){
+  const fs = MEIZHOU_GEO.features;
+  fs.forEach(f=>{
+    const c = f.properties.center;
+    if(!c) return;
+    const el=document.createElement("div");
+    el.className="lbl lbl-county"; el.textContent=f.properties.name;
+    const m=new maplibregl.Marker({element:el}).setLngLat(c).addTo(map);
+    countyMarkers.push(m);
+  });
+}
+
+/* ---------- 動態標記（城垣/地標） ---------- */
+let dynMarkers=[];
+function clearDyn(){ dynMarkers.forEach(m=>m.remove()); dynMarkers=[]; }
+function addLabel(lon,lat,text,cls){
+  const el=document.createElement("div"); el.className="lbl "+cls; el.textContent=text;
+  const m=new maplibregl.Marker({element:el}).setLngLat([lon,lat]).addTo(map);
+  dynMarkers.push(m);
+}
+
+/* ---------- 時間軸 ---------- */
+const T = window.MZ_TIMELINE, LAND = window.MZ_LANDMARKS;
+let idx = 3;
+const slider=document.getElementById("slider");
+const playBtn=document.getElementById("playBtn");
+let playing=false, timer=null;
+// 滑块範圍隨資料長度自適應，避免越界（資料 12 條 → 0..11）
+slider.max = T.length - 1;
+// 測試/外部hook：安全切換時間軸節點
+window.setIdx = (i)=>{ if(i<0||i>=T.length) return; idx=i; renderTimeline(); };
+// 时间轴节点刻度（手动点击跳转）
+const tickRow=document.getElementById("tickRow");
+T.forEach((t,i)=>{
+  const s=document.createElement("span");
+  s.textContent=t.year;
+  s.title=t.name+"（"+t.year+"年）";
+  s.addEventListener("click",()=>{ window.setIdx(i); });
+  tickRow.appendChild(s);
+});
+function syncTick(){
+  [...tickRow.children].forEach((s,i)=>s.classList.toggle("on", i===idx));
+}
+
+/* ---------- 建县时序条（各县区建县标记 + 游标） ---------- */
+const EST_MIN=-200, EST_MAX=2026;
+const EST_MARKS = [
+  { cid:"xingning", name:"兴宁", year:331,  tip:"东晋咸和六年（331）置兴宁" },
+  { cid:"meizhou",  name:"程乡", year:479,  tip:"南齐永明元年（483）置程乡县，今梅城" },
+  { cid:"wuhua",    name:"五华", year:1071, tip:"北宋熙宁置长乐县（前195赵佗筑长乐台）" },
+  { cid:"dapu",     name:"大埔", year:1526, tip:"明嘉靖五年置大埔（前身：413义招县/607万川）" },
+  { cid:"pingyuan", name:"平远", year:1562, tip:"明嘉靖四十一年析四县地置平远" },
+  { cid:"jiaoling", name:"蕉岭", year:1633, tip:"明崇祯六年赐名镇平，1914改蕉岭" },
+  { cid:"fengshun", name:"丰顺", year:1738, tip:"清乾隆三年置丰顺（明末已有丰顺营）" }
+];
+const estBar = document.getElementById("estBar");
+function buildEstBar(){
+  EST_MARKS.forEach(m=>{
+    const el=document.createElement("div");
+    el.className="est-mark";
+    el.style.left = ((m.year-EST_MIN)/(EST_MAX-EST_MIN)*100).toFixed(2)+"%";
+    el.dataset.year = m.year;
+    el.title = "建县于"+m.year+"年 · "+m.tip;
+    el.innerHTML = `<span class="dot"></span><span>${m.name}</span>`;
+    el.addEventListener("click",()=>{
+      if(m.cid!=="meizhou"){ showCountyCard(m.cid); }
+      else { window.setIdx(0); }  // 程乡→跳最早节点
+    });
+    estBar.appendChild(el);
+  });
+}
+function renderEstBar(){
+  const year = T[idx].year;
+  document.getElementById("estCursor").style.left = ((year-EST_MIN)/(EST_MAX-EST_MIN)*100).toFixed(2)+"%";
+  estBar.querySelectorAll(".est-mark").forEach(el=>{
+    el.classList.toggle("est", year>= (+el.dataset.year));
+  });
+}
+buildEstBar();
+
+function renderTimeline(){
+  const item = T[idx];
+  // 地图：城垣 source（优先使用地理配准后的精确数据）
+  const feats=[];
+  const GEO = window.MZ_WALLS_GEO;
+  if(GEO && GEO.features && GEO.features.length){
+    const matched = GEO.features.filter(f=>f.properties && f.properties.year===item.year);
+    matched.forEach(f=>{
+      const mat = f.properties.material || "";
+      const ancient = mat!=="現代城區";
+      const h = ancient ? 14 : (mat==="舊城牆拆除"?8:55);
+      const clone = JSON.parse(JSON.stringify(f));
+      clone.properties = { ...clone.properties, ancient:ancient?1:0, height:h, name:(clone.properties.name||mat)+"·"+item.year };
+      feats.push(clone);
+    });
+  }
+  // 无精确数据时回退到示意性 wall.geom
+  if(feats.length===0 && item.wall && item.wall.geom){
+    const ancient = item.wall.material!=="現代城區";
+    const h = ancient ? 14 : (item.wall.material==="舊城牆拆除"?8:55);
+    feats.push({ type:"Feature",
+      properties:{ ancient:ancient?1:0, height:h, name:item.wall.material+"·"+item.year },
+      geometry:{ type:"Polygon", coordinates:[item.wall.geom] } });
+  }
+  const ws = map.getSource("walls");
+  if(ws) ws.setData({ type:"FeatureCollection", features:feats });
+
+  // 動態標記
+  clearDyn();
+  let labelGeom=null, labelText="", labelW=item.wall;
+  if(feats.length){
+    const wallFeat = feats.find(f=>f.properties.layer==="wall" || f.geometry.type==="Polygon");
+    if(wallFeat){
+      labelGeom = wallFeat.geometry.coordinates[0];
+      labelText = (wallFeat.properties.material||"城區") + (wallFeat.properties.perimeterM?(" 周"+wallFeat.properties.perimeterM+"m"):"");
+      labelW = null; // 已用精确数据，不再使用示意性 wall 的 perimeter/gates
+    }
+  }
+  if(!labelGeom && item.wall && item.wall.geom){
+    labelGeom = item.wall.geom;
+    labelText = item.wall.perimeterM? (item.wall.material+" 周"+item.wall.perimeterM+"m"+(item.wall.gates?(" "+item.wall.gates+"門"):"")) : (item.wall.material||"城區");
+  }
+  if(labelGeom){
+    let lon=0,lat=0;
+    labelGeom.slice(0,-1).forEach(p=>{lon+=p[0];lat+=p[1];});
+    const n=labelGeom.length-1; lon/=n; lat/=n;
+    addLabel(lon,lat,labelText,"lbl-wall");
+  }
+  LAND.filter(m=>m.year<=item.year).forEach(m=>{
+    addLabel(m.lon,m.lat,m.name,"lbl-land");
+  });
+
+  // 右欄
+  document.getElementById("yearBig").textContent=item.year;
+  document.getElementById("nameBig").textContent=item.name+" · "+(item.wall?item.wall.material:"未築城");
+  document.getElementById("d-level").textContent="（"+item.level+"）";
+  document.getElementById("d-name").textContent=item.name;
+  const w=item.wall;
+  document.getElementById("d-wall").textContent = w? (w.material+(w.perimeterM?("，周 "+w.perimeterM+"m"):"")) : "無城郭/現代城區";
+  document.getElementById("d-wall-n").textContent = w? (w.location+(w.gates?("，"+w.gates+"門"):"")+(w.wards?("，轄"+w.wards.join("·")+"等坊"):"")) : "";
+  const p=item.population;
+  document.getElementById("d-pop").textContent = p.value? (p.value.toLocaleString()+(p.unit||"人")) : "無記載";
+  document.getElementById("d-pop-n").textContent = p.note||"";
+  const c=item.culture;
+  document.getElementById("d-cul").textContent = (c.jinshi?("進士 "+c.jinshi+" 人"):"")+(c.tag?(" · "+c.tag):"");
+  document.getElementById("d-cul-n").textContent = c.note||"";
+  document.getElementById("d-eco").textContent = item.economy.note||"";
+  document.getElementById("d-soc").textContent = item.society.note||"";
+  document.getElementById("d-cul2").textContent = item.culture.tag? (item.culture.note||"") : (item.culture.note||"");
+  document.getElementById("d-desc").textContent = item.desc;
+  slider.value=idx;
+  syncTick();
+}
+slider.addEventListener("input",e=>{ idx=+e.target.value; renderTimeline(); });
+playBtn.addEventListener("click",()=>{
+  playing=!playing; playBtn.textContent=playing?"⏸ 暂停":"▶ 播放";
+  if(playing){ timer=setInterval(()=>{ idx=(idx+1)%T.length; renderTimeline(); if(idx===0&&playing){} },1400); }
+  else clearInterval(timer);
+});
+
+/* ---------- 2D / 3D 切換 ---------- */
+const btn2D=document.getElementById("btn2D"), btn3D=document.getElementById("btn3D");
+function setMode(mode){
+  if(mode==="3D"){
+    ensureDem();
+    map.easeTo({pitch:58,bearing:-12,duration:900});
+    try{ if(map.getSource("dem")) map.setTerrain({source:"dem",exaggeration:1.25}); }catch(e){}
+    map.setLayoutProperty("wall-3d","visibility","visible");
+    map.setLayoutProperty("wall-fill","visibility","none");
+    map.setLayoutProperty("wall-line","visibility","none");
+    btn3D.classList.add("active"); btn2D.classList.remove("active");
+  }else{
+    map.easeTo({pitch:0,bearing:0,duration:900});
+    try{ map.setTerrain(null); }catch(e){}
+    map.setLayoutProperty("wall-3d","visibility","none");
+    map.setLayoutProperty("wall-fill","visibility","visible");
+    map.setLayoutProperty("wall-line","visibility","visible");
+    btn2D.classList.add("active"); btn3D.classList.remove("active");
+  }
+}
+btn2D.addEventListener("click",()=>setMode("2D"));
+btn3D.addEventListener("click",()=>setMode("3D"));
+document.getElementById("btnFocus").addEventListener("click",()=>map.easeTo({center:[116.111,24.309],zoom:14,duration:900}));
+document.getElementById("btnAll").addEventListener("click",()=>map.easeTo({center:[116.18,24.45],zoom:8.6,duration:900}));
+
+/* ---------- 標籤頁 ---------- */
+document.querySelectorAll(".tab").forEach(t=>{
+  t.addEventListener("click",()=>{
+    document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
+    t.classList.add("active");
+    const tab=t.dataset.tab;
+    document.getElementById("cityWrap").style.display = tab==="city"?"block":"none";
+    document.getElementById("sankeyWrap").style.display = tab==="sankey"?"block":"none";
+    if(tab==="sankey") renderSankey();
+  });
+});
+
+/* ---------- CBDB 科舉桑基圖（純 SVG，離線） ---------- */
+const SANKEY={
+  total:67,
+  nodes:[
+    {id:"src",name:"梅州籍進士",side:"L"},
+    {id:"jing",name:"京師(中央)",side:"R"},
+    {id:"gd",name:"廣東",side:"R"},
+    {id:"jx",name:"江西",side:"R"},
+    {id:"fj",name:"福建",side:"R"},
+    {id:"sd",name:"山東",side:"R"},
+    {id:"hw",name:"海外(日英美)",side:"R"}
+  ],
+  links:[
+    {s:"src",t:"jing",v:18},
+    {s:"src",t:"gd",v:22},
+    {s:"src",t:"jx",v:8},
+    {s:"src",t:"fj",v:6},
+    {s:"src",t:"sd",v:5},
+    {s:"src",t:"hw",v:8}
+  ]
+};
+function renderSankey(){
+  const svg=document.getElementById("sankey"); svg.innerHTML="";
+  const W=360,H=300,Lx=18,Rx=W-110,nodeW=14;
+  const R=SANKEY.nodes.filter(n=>n.side==="R");
+  // 右節點高度 = 對應連線總和
+  const nodeVal = {};
+  SANKEY.links.forEach(l=>{ nodeVal[l.t]=(nodeVal[l.t]||0)+l.v; });
+  const maxR=R.reduce((a,n)=>a+(nodeVal[n.id]||0),0), maxL=SANKEY.total;
+
+  // 右節點佈局
+  const layout={};
+  let y=10, gap=2;
+  R.forEach(n=>{
+    const v=nodeVal[n.id]||0;
+    const h=Math.max((v/maxR)*(H-24),5);
+    layout[n.id]={y0:y, h:h, v:v}; y+=h+gap;
+  });
+
+  // 1) 連結（曲線）——先畫，被節點覆蓋
+  const lh=(v)=>Math.max((v/maxL)*(H-24),2);
+  let sy0=H/2-40;
+  SANKEY.links.forEach(l=>{
+    const lo=layout[l.t]; if(!lo) return;
+    const th=lh(l.v);
+    const x0=Lx+nodeW, x1=Rx, mx=(x0+x1)/2;
+    const y0a=sy0, y0b=sy0+th;
+    const y1a=lo.y0+(lo.h-th)/2, y1b=y1a+th;
+    const path=document.createElementNS("http://www.w3.org/2000/svg","path");
+    path.setAttribute("d",`M${x0},${y0a} C${mx},${y0a} ${mx},${y1a} ${x1},${y1a} L${x1},${y1b} C${mx},${y1b} ${mx},${y0b} ${x0},${y0b} Z`);
+    path.setAttribute("fill","rgba(156,47,27,.18)"); path.setAttribute("stroke","rgba(156,47,27,.22)"); path.setAttribute("stroke-width","0.5");
+    svg.appendChild(path); sy0+=th;
+  });
+
+  // 2) 左節點
+  const src=document.createElementNS("http://www.w3.org/2000/svg","rect");
+  src.setAttribute("x",Lx); src.setAttribute("y",H/2-40); src.setAttribute("width",nodeW); src.setAttribute("height",80);
+  src.setAttribute("fill","#9c2f1b"); svg.appendChild(src);
+  const st=document.createElementNS("http://www.w3.org/2000/svg","text");
+  st.setAttribute("x",Lx+nodeW+6); st.setAttribute("y",H/2+4); st.setAttribute("font-size","12"); st.setAttribute("fill","#3f3220"); st.setAttribute("font-family","KaiTi,serif");
+  st.textContent="梅州籍進士 "+SANKEY.total; svg.appendChild(st);
+
+  // 3) 右節點 + 標籤
+  R.forEach(n=>{
+    const lo=layout[n.id];
+    const r=document.createElementNS("http://www.w3.org/2000/svg","rect");
+    r.setAttribute("x",Rx); r.setAttribute("y",lo.y0); r.setAttribute("width",nodeW); r.setAttribute("height",lo.h);
+    r.setAttribute("fill","#5a8f7b"); svg.appendChild(r);
+    const t=document.createElementNS("http://www.w3.org/2000/svg","text");
+    t.setAttribute("x",Rx-6); t.setAttribute("y",lo.y0+lo.h/2+4); t.setAttribute("text-anchor","end"); t.setAttribute("font-size","11"); t.setAttribute("fill","#3f3220"); t.setAttribute("font-family","KaiTi,serif");
+    t.textContent=n.name+" "+lo.v; svg.appendChild(t);
+  });
+}
+
+/* ============================================================
+ * 故事层（MZ_STORY）：坊巷 AOI + 城门/建筑/人物 POI + 任官弧线
+ * 时间绑定：要素按 year <= 当前时间轴年份 过滤显示
+ * 可追溯：每条记录 story 卡内嵌 source.name + source.url 链接
+ * ============================================================ */
+const STORY = window.MZ_STORY;
+let storyOn = false;
+let storyPoiMarkers = [], storyAoiData = null, storyArcOn = false;
+const card = document.getElementById("storyCard");
+
+/* ---------- AOI 图层（坊巷面） ---------- */
+function ensureStoryAoiLayer(cb){
+  if(map.getSource("story-aoi")){ cb&&cb(); return; }
+  const tryAdd = ()=>{
+    try{
+      map.addSource("story-aoi",{ type:"geojson", data:{type:"FeatureCollection",features:[]} });
+      map.addLayer({ id:"story-aoi-fill", type:"fill", source:"story-aoi",
+        paint:{ "fill-color":["case",["==",["get","type"],"event"],"#8a6a45","#9c2f1b"],
+                "fill-opacity":0.15 } });
+      map.addLayer({ id:"story-aoi-line", type:"line", source:"story-aoi",
+        paint:{ "line-color":["case",["==",["get","type"],"event"],"#8a6a45","#9c2f1b"],
+                "line-width":1.5, "line-dasharray":[2,1] } });
+      map.on("click", e=>{
+        // ① 优先命中 AOI 面
+        const hits = map.queryRenderedFeatures(e.point,{layers:["story-aoi-fill"]});
+        if(hits.length){
+          showStoryCard({ type:"aoi", id:hits[0].properties.id,
+            name:hits[0].properties.name, year:hits[0].properties.year,
+            story:hits[0].properties.story, source:tryParse(hits[0].properties.source),
+            stats:tryParse(hits[0].properties.stats) });
+          return;
+        }
+        // ② 就近命中可见 POI（解决 marker 遮挡点不到/点错的问题）
+        if(storyOn){
+          const curYear = T[idx].year;
+          let best=null, bestD=Infinity;
+          STORY.pois.forEach(p=>{
+            if((p.year||9999)>curYear) return;
+            const pt = map.project([p.lon,p.lat]);
+            const d = Math.hypot(pt.x-e.point.x, pt.y-e.point.y);
+            if(d<bestD){ bestD=d; best=p; }
+          });
+          if(best && bestD<30){ showStoryCard(best); return; }
+        }
+        // ③ 命中县区面 → 弹县区故事卡（adcode 映射）
+        const ch = map.queryRenderedFeatures(e.point,{layers:["county-fill"]});
+        if(ch.length){
+          const cid = COUNTY_ADCODE[ch[0].properties.adcode];
+          if(cid){ showCountyCard(cid); return; }
+        }
+        // ④ 空白处关闭卡片
+        closeCard();
+      });
+      map.on("mousemove", e=>{
+        const hits = map.queryRenderedFeatures(e.point,{layers:["story-aoi-fill"]});
+        map.getCanvas().style.cursor = hits.length ? "pointer" : "";
+      });
+      map.on("zoomend", ()=>{ if(storyOn) renderStoryPoi(); });  // zoom 变化切换 POI 显示模式
+      cb&&cb();
+    }catch(err){ setTimeout(tryAdd, 300); }  // style 未就绪则重试
+  };
+  tryAdd();
+}
+function tryParse(s){ try{ return JSON.parse(s); }catch(err){ return null; } }
+
+/* ---------- POI DOM 标记 ---------- */
+function clearStoryPoi(){ storyPoiMarkers.forEach(m=>m.remove()); storyPoiMarkers=[]; }
+function renderStoryPoi(){
+  clearStoryPoi();
+  if(!storyOn) return;
+  const curYear = T[idx].year;
+  const z = map.getZoom();
+  // ★ zoom 分层：低倍率（全景）只显示图标；高倍率（聚焦老城）显示图标+名称
+  const iconOnly = z < 11.5;
+  let created = 0, failed = 0;
+  STORY.pois.filter(p=> (p.year||9999) <= curYear ).forEach(p=>{
+    try{
+      const el=document.createElement("div");
+      el.className="lbl lbl-story"+(p.type==="person"?" person":"");
+      const name = p.name;
+      el.innerHTML = `<img src="icons/${p.icon||"icon-landmark"}.png" alt=""/>` + (iconOnly? "" : `<span>${name}</span>`);
+      el.title = (p.desc||name);
+      el.addEventListener("click",e=>{ e.stopPropagation(); showStoryCard(p); });
+      const m=new maplibregl.Marker({element:el}).setLngLat([p.lon,p.lat]).addTo(map);
+      // 层级设到 marker 包装层（兄弟排序才生效）：人物 > 事件 > 城门 > 建筑
+      try{
+        const zi = p.type==="person"?260 : p.type==="event"?250 : p.type==="gate"?240 : 230;
+        m.getElement().parentElement.style.zIndex = zi;
+      }catch(e2){}
+      storyPoiMarkers.push(m);
+      created++;
+    }catch(err){ failed++; }  // 单个失败不中断整体
+  });
+  // style 未就绪导致全部失败 → 稍后重试（不阻塞其他功能）
+  if(created===0 && failed>0){
+    setTimeout(()=>{ if(storyOn) renderStoryPoi(); }, 500);
+  }
+}
+
+/* ---------- 城区范围动画层（城市扩张） ---------- */
+function ensureUrbanLayer(cb){
+  if(map.getSource("urban")){ cb&&cb(); return; }
+  const tryAdd = ()=>{
+    try{
+      map.addSource("urban",{ type:"geojson", data:{type:"FeatureCollection",features:[]} });
+      map.addLayer({ id:"urban-fill", type:"fill", source:"urban",
+        paint:{ "fill-color":["case",["==",["get","latest"],1],"#9c2f1b","#bd9a55"],
+                "fill-opacity":["case",["==",["get","latest"],1],0.22,0.11] } });
+      map.addLayer({ id:"urban-line", type:"line", source:"urban",
+        paint:{ "line-color":["case",["==",["get","latest"],1],"#9c2f1b","#bd9a55"],
+                "line-width":["case",["==",["get","latest"],1],2.4,1.2],
+                "line-dasharray":["case",["==",["get","latest"],1],["literal",[1,0]],["literal",[3,2]]],
+                "line-opacity":0.9 } });
+      cb&&cb();
+    }catch(err){ setTimeout(tryAdd, 300); }
+  };
+  tryAdd();
+}
+function renderUrban(){
+  const src = map.getSource("urban");
+  if(!src) return;
+  const curYear = T[idx].year;
+  const urbanLabel=document.getElementById("urbanLabel");
+  // ★ 年轮式叠加：显示 <= 当前年份的所有城区切片（老→新，透明度递增强调最新）
+  const layers=[];
+  (STORY.urbanGrowth||[]).forEach(u=>{
+    if(u.year<=curYear)
+      layers.push({ type:"Feature", properties:{year:u.year,label:u.label,latest:(u.year===curYear?1:0)},
+                    geometry:{ type:"Polygon", coordinates:[u.geom] } });
+  });
+  if(layers.length){
+    src.setData({ type:"FeatureCollection", features:layers });
+    const latest = layers[layers.length-1].properties;
+    urbanLabel.textContent = "城区范围 · "+latest.label+(layers.length>1?("（历代轮廓 "+layers.length+" 环叠加）"):"");
+    urbanLabel.style.display="block";
+  } else {
+    src.setData({ type:"FeatureCollection", features:[] });
+    urbanLabel.style.display="none";
+  }
+}
+
+/* ---------- 古地名铭牌 ---------- */
+function renderPlacePlate(){
+  const item = T[idx];
+  const pn = (STORY.placeNames||{})[item.year] || item.name;
+  document.getElementById("plateName").textContent = pn;
+  document.getElementById("plateSub").textContent = item.name+" · "+(item.level||"");
+  const w=item.wall;
+  document.getElementById("plateNote").textContent = w? (w.material+(w.perimeterM?(" 周"+w.perimeterM+"m"):"")) : (item.society.note||"").slice(0,14);
+}
+
+/* ---------- 任官弧线（人物 PATH） ---------- */
+function ensureArcLayer(cb){
+  if(map.getSource("career-arc")){ cb&&cb(); return; }
+  const tryAdd = ()=>{
+    try{
+      map.addSource("career-arc",{ type:"geojson", data:{type:"FeatureCollection",features:[]} });
+      map.addLayer({ id:"career-arc-line", type:"line", source:"career-arc",
+        paint:{ "line-color":"#c0412a", "line-width":1.6, "line-opacity":0.75,
+                "line-dasharray":[3,2] } });
+      cb&&cb();
+    }catch(err){ setTimeout(tryAdd, 300); }
+  };
+  tryAdd();
+}
+function arcPoints(p1, p2, n=42){
+  const pts=[];
+  const lift = Math.min(0.09, Math.abs(p2[0]-p1[0])*0.18); // 弧高∝经度差
+  for(let i=0;i<=n;i++){
+    const t=i/n;
+    let lon = p1[0]+(p2[0]-p1[0])*t;
+    let lat = p1[1]+(p2[1]-p1[1])*t + Math.sin(Math.PI*t)*lift; // 中部鼓起
+    pts.push([+lon.toFixed(5), +lat.toFixed(5)]);
+  }
+  return pts;
+}
+function drawPersonArcs(person){
+  if(!storyArcOn) return;
+  const feats=[];
+  (person.careers||[]).forEach(c=>{
+    feats.push({ type:"Feature",
+      properties:{ name:c.post+" · "+c.place, from:person.name },
+      geometry:{ type:"LineString", coordinates:arcPoints([person.home.lon,person.home.lat],[c.lon,c.lat]) } });
+  });
+  ensureArcLayer(()=>{
+    map.getSource("career-arc").setData({type:"FeatureCollection",features:feats});
+  });
+}
+function clearArcs(){ if(map.getSource("career-arc")) map.getSource("career-arc").setData({type:"FeatureCollection",features:[]}); }
+
+/* ---------- 故事卡 ---------- */
+function sourceHtml(src){
+  if(!src) return "";
+  if(src.url) return `<a href="${src.url}" target="_blank" rel="noopener">${src.name||"资料来源"} ↗</a>`;
+  return `<span>${src.name||""}</span>`;
+}
+function mediaLinks(media){
+  if(!media || !media.length) return "";
+  const seen={};
+  const imgs=[], links=[];
+  (media||[]).forEach(m=>{
+    if(!m) return;
+    if(m.type==="img" && m.src){
+      imgs.push(`<figure class="sc-fig"><img src="${m.src}" alt="${m.title||''}" loading="lazy"/><figcaption>${m.title||''}</figcaption></figure>`);
+    } else if(m.url && !seen[m.url]){
+      seen[m.url]=1;
+      links.push(`<a href="${m.url}" target="_blank" rel="noopener">📷 ${m.title||"影像资料"}</a>`);
+    }
+  });
+  let h="";
+  if(imgs.length) h += imgs.join("");
+  if(links.length) h += `<div class="sc-src">🖼 更多老照片：${links.join(" · ")}</div>`;
+  return h;
+}
+function closeCard(){ card.style.display="none"; clearArcs(); storyArcOn=false; clearTempPoi(); }
+function showStoryCard(item){
+  if(!item) return;
+  let title="", meta="", body="", statsHtml="", mediaHtml="", src=item.source;
+  if(item.type==="aoi" || item.type==="ward"){
+    const w = STORY.wards.find(x=>x.id===item.id);
+    title = w? w.name : item.name;
+    meta = "坊巷 · 始建于 "+(item.year||"")+" 年";
+    body = `<p>${item.story||""}</p>`;
+    if(w){
+      const s=w.stats||{};
+      if(s.jinshi||s.totalKejia)
+        statsHtml = `<div class="sc-stats"><b>科甲统计：</b>进士 ${s.jinshi||0} · 文举 ${s.wenJuren||0} · 武举 ${s.wuJuren||0} · 共 ${s.totalKejia||"-"}</div>`;
+      if(w.highlights && w.highlights.length)
+        statsHtml += `<div class="sc-stats"><b>坊巷亮点：</b>${w.highlights.join("；")}</div>`;
+      if(w.buildings && w.buildings.length)
+        statsHtml += `<div class="sc-stats"><b>坊内建筑：</b>${w.buildings.map(b=>b.name).join("、")}</div>`;
+      body += `<p><b>相关人物：</b>${(w.people||[]).map(pid=>{const p=STORY.people.find(x=>x.id===pid);return p?p.name:pid;}).join("、")||"无"}</p>`;
+    }
+    src = w? w.source : src;
+  } else if(item.type==="person"){
+    const p = STORY.people.find(x=>x.id===item.personId);
+    if(p){
+      title = p.name; meta = (p.era||"")+" · "+p.headline;
+      body = `<p>${p.story||""}</p>`;
+      if(p.kin && p.kin.length)
+        statsHtml = `<div class="sc-stats"><b>亲属：</b>${p.kin.map(k=>`${k.rel} ${k.name}`).join("、")}</div>`;
+      if(p.careers && p.careers.length)
+        statsHtml += `<div class="sc-stats"><b>任官：</b>${p.careers.map(c=>c.post+"（"+c.place+"）").join(" → ")}</div>`;
+      src = p.source;
+      mediaHtml = mediaLinks(p.media);
+    } else { title=item.name; body=`<p>${item.story||""}</p>`; }
+  } else {
+    title = item.name; meta = (item.year? ("公元"+item.year+"年") : "");
+    body = `<p>${item.story||""}</p>`;
+    if(item.desc && item.desc!==item.story) body += `<p class="sc-cb">${item.desc}</p>`;
+    mediaHtml = mediaLinks(item.media);
+  }
+  card.innerHTML = `
+    <div class="sc-head">
+      <div><div class="sc-title">${title}</div><div class="sc-meta">${meta}</div></div>
+      <div class="sc-close" title="关闭">✕</div>
+    </div>
+    <div class="sc-body">
+      ${body}
+      ${statsHtml}
+      ${mediaHtml}
+      ${src? `<div class="sc-src">🔗 资料来源：${sourceHtml(src)}${src.quote?`<br/><i style="color:#8a7a55">“${src.quote}”</i>`:""}</div>`:""}
+      ${item.type==="person"||item.personId? `<div class="sc-btn" id="scArcBtn">${storyArcOn?"收起任官弧线":"🗺 查看任官路径（"+((STORY.people.find(x=>x.id===item.personId)||{}).careers||[]).length+" 条）"}</div>`:""}
+    </div>`;
+  card.style.display="block";
+  card.querySelector(".sc-close").addEventListener("click", closeCard);
+  const arcBtn = card.querySelector("#scArcBtn");
+  if(arcBtn){
+    arcBtn.addEventListener("click",()=>{
+      storyArcOn=!storyArcOn;
+      const p = STORY.people.find(x=>x.id===item.personId);
+      if(storyArcOn){ drawPersonArcs(p); arcBtn.textContent="收起任官弧线"; }
+      else { clearArcs(); arcBtn.textContent="🗺 查看任官路径"; }
+    });
+  }
+}
+
+/* ---------- 县区故事卡（点击县区面触发，与主时间轴联动） ---------- */
+const COUNTY_ADCODE = { 441481:"xingning", 441422:"dapu", 441424:"wuhua", 441426:"pingyuan", 441427:"jiaoling", 441423:"fengshun" };
+let tempPoiMarkers = [];
+function clearTempPoi(){ tempPoiMarkers.forEach(m=>m.remove()); tempPoiMarkers=[]; }
+function showCountyCard(cid){
+  const c = STORY.counties.find(x=>x.id===cid);
+  if(!c) return;
+  const curYear = T[idx].year;
+  // 沿革节点高亮：当前年份落在哪个节点区间
+  let activeIdx = -1;
+  c.timeline.forEach((t,i)=>{ if(t.year<=curYear) activeIdx=i; });
+  const tlHtml = c.timeline.map((t,i)=>{
+    const on = i===activeIdx;
+    return `<div class="ct-tl${on?' on':''}"><span class="ct-yr">${t.year===-195?'前195':t.year}</span><span class="ct-ev">${t.event}</span><span class="ct-nt">${t.note||''}</span></div>`;
+  }).join("");
+  const poiHtml = c.pois.map(p=>{
+    return `<span class="ct-poi" data-lon="${p.lon}" data-lat="${p.lat}" data-name="${p.name}" data-story="${(p.story||'').replace(/"/g,'&quot;')}">${p.name}<i>${p.year?p.year:''}</i></span>`;
+  }).join("");
+  const factsHtml = (c.culture.facts||[]).map(f=>`<div class="sc-stats" style="margin:4px 0"><b>·</b> ${f}</div>`).join("");
+  const peopleHtml = (c.culture.people||[]).map(p=>`<span class="tag">${p.name}${p.era?('（'+p.era+'）'):''}</span>`).join(" ");
+  const academicHtml = (c.culture.academic||[]).map(a=>`<span>${a}</span>`).join(" · ");
+  card.innerHTML = `
+    <div class="sc-head">
+      <div><div class="sc-title">${c.name} · ${c.headline||''}</div>
+      <div class="sc-meta">建置：${c.establishedNote||''}</div></div>
+      <div class="sc-close" title="关闭">✕</div>
+    </div>
+    <div class="sc-body">
+      <p class="sc-cb"><b>县名由来：</b>${c.nameOrigin||''}</p>
+      <div class="ct-tl-wrap"><b style="font-size:12px;color:var(--zhu)">建置沿革 · 随时间轴联动</b>${tlHtml}</div>
+      <div class="ct-poi-wrap"><b style="font-size:12px;color:var(--zhu)">县区地标 · 点击地图定位</b>${poiHtml}
+      <div id="ctPoiStory">点击上方地标查看简介</div></div>
+      ${factsHtml}
+      ${peopleHtml?`<div class="sc-stats"><b>名人：</b>${peopleHtml}</div>`:""}
+      ${academicHtml?`<div class="sc-src">📚 学术/文献：${academicHtml}</div>`:""}
+      ${c.source?`<div class="sc-src">🔗 资料来源：${sourceHtml(c.source)}</div>`:""}
+    </div>`;
+  card.style.display="block";
+  card.querySelector(".sc-close").addEventListener("click", closeCard);
+  clearTempPoi();
+  card.querySelectorAll(".ct-poi").forEach(el=>{
+    el.addEventListener("click",()=>{
+      const lon=+el.dataset.lon, lat=+el.dataset.lat;
+      map.flyTo({center:[lon,lat],zoom:11.5,duration:1200});
+      clearTempPoi();
+      const t=document.createElement("div"); t.className="lbl lbl-story";
+      t.innerHTML=`<img src="icons/icon-landmark.png" alt=""/><span>${el.dataset.name}</span>`;
+      const m=new maplibregl.Marker({element:t}).setLngLat([lon,lat]).addTo(map);
+      tempPoiMarkers.push(m);
+      document.getElementById("ctPoiStory").textContent = el.dataset.story||"";
+    });
+  });
+}
+
+/* ---------- 全市域县区截面（统一时间线驱动） ---------- */
+function renderCountySnapshot(){
+  const year = T[idx].year;
+  document.getElementById("snapYear").textContent = "· "+year+"年";
+  const rows = [];
+  // ① 州城（程乡/梅州主线，即当前主节点）
+  const m = T[idx];
+  rows.push({ id:"meizhou", name:m.name, status:"州城", cls:"city",
+    note:"（"+(m.wall?m.wall.material:"未築城")+(m.wall&&m.wall.perimeterM?(" 周"+m.wall.perimeterM+"m"):"")+"）" });
+  // ② 各县区（从 counties 沿革时间线计算当前状态）
+  STORY.counties.forEach(c=>{
+    let active=null;
+    c.timeline.forEach(t=>{ if(t.year<=year) active=t; });
+    if(active){
+      const est = year>=c.established;
+      const shown = est? c.name : c.name+"（"+active.event+"）";
+      rows.push({ id:c.id, name:shown, status:est?"已建县":"已设治", cls:est?"est":"pre",
+        note: (est? active.event+"·"+year : active.event)+(active.note?("；"+active.note):"") });
+    } else {
+      rows.push({ id:c.id, name:c.name, status:"未建县", cls:"none", note:c.preEstablished||"" });
+    }
+  });
+  const list = document.getElementById("snapList");
+  list.innerHTML = rows.map(r=>
+    `<div class="snap-row" data-cid="${r.id}">
+       <span class="snap-name">${r.name}</span>
+       <span class="snap-st ${r.cls}">${r.status}</span>
+       <span class="snap-note" title="${r.note||''}">${r.note||''}</span>
+     </div>`).join("");
+  list.querySelectorAll(".snap-row").forEach(el=>{
+    el.addEventListener("click",()=>{
+      const cid = el.dataset.cid;
+      if(cid==="meizhou"){ closeCard(); return; }
+      showCountyCard(cid);
+    });
+  });
+}
+
+/* ---------- 故事层总开关 ---------- */
+const btnStory=document.getElementById("btnStory");
+const storyLegend=document.getElementById("storyLegend");
+function setStory(on){
+  storyOn=on;
+  btnStory.classList.toggle("storyOn",on);
+  storyLegend.style.display = on? "block":"none";
+  if(on){
+    ensureStoryAoiLayer(()=>{
+      const curYear = T[idx].year;
+      map.getSource("story-aoi").setData({
+        type:"FeatureCollection",
+        features: STORY.aoi.features.filter(f=>(f.properties.year||9999)<=curYear)
+      });
+    });
+    renderStoryPoi();
+  } else {
+    clearStoryPoi();
+    clearArcs(); storyArcOn=false; closeCard();
+    if(map.getSource("story-aoi"))
+      map.getSource("story-aoi").setData({type:"FeatureCollection",features:[]});
+  }
+}
+btnStory.addEventListener("click",()=>setStory(!storyOn));
+
+/* ---------- 古地图控制面板（开关/透明度/坐标微调） ---------- */
+const btnOldMap=document.getElementById("btnOldMap");
+function setOldMapOn(on){
+  oldMapOn=on;
+  btnOldMap.classList.toggle("storyOn",on);
+  const mode = T[idx].year>=1912 ? "modern" : T[idx].year>=1385 ? "mingqing" : "ancient";
+  if(on) ensureOldMapLayer(()=>applyOldMap(mode));
+  else if(map.getLayer("oldmap-raster")){
+    try{ map.setLayoutProperty("oldmap-raster","visibility","none"); }catch(e){}
+  }
+  updateOldMapUI(); omSave();
+}
+btnOldMap.addEventListener("click",()=>setOldMapOn(!oldMapOn));
+document.getElementById("ompOn").addEventListener("change",e=>setOldMapOn(e.target.checked));
+document.getElementById("ompOpacity").addEventListener("input",e=>{
+  oldMapOpacity = (+e.target.value)/100;
+  document.getElementById("ompOpVal").textContent = Math.round(oldMapOpacity*100)+"%";
+  if(map.getLayer("oldmap-raster"))
+    map.setPaintProperty("oldmap-raster","raster-opacity", oldMapOpacity);
+  omSave();
+});
+document.getElementById("ompMap").addEventListener("change",e=>switchOldMap(e.target.value));
+document.querySelectorAll(".omp-btn[data-act]").forEach(b=>{
+  b.addEventListener("click",()=>adjustOldMap(b.dataset.act));
+});
+document.getElementById("ompColl").addEventListener("click",()=>{
+  const body=document.getElementById("ompBody");
+  body.classList.toggle("hidden");
+  document.getElementById("ompColl").textContent = body.classList.contains("hidden") ? "▸ 展开" : "▾ 收起";
+});
+updateOldMapUI();
+
+/* 时间轴变化时刷新故事层过滤（在 renderTimeline 末尾调用） */
+const _rt_orig = window.renderTimeline || renderTimeline;
+function renderTimelineWithStory(){
+  _rt_orig();
+  renderPlacePlate();
+  ensureUrbanLayer(()=>renderUrban());
+  applyEraStyle(T[idx].year);
+  renderCountySnapshot();
+  renderEstBar();
+  if(storyOn && map.getSource("story-aoi")){
+    const curYear = T[idx].year;
+    map.getSource("story-aoi").setData({
+      type:"FeatureCollection",
+      features: STORY.aoi.features.filter(f=>(f.properties.year||9999)<=curYear)
+    });
+    renderStoryPoi();
+  }
+}
+renderTimeline = renderTimelineWithStory;
+</script>
+</body>
+</html>

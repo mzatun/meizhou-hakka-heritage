@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>梅州 · 城市千年变迁｜Canvas 2D 技术方案原型</title>
+<style>
+:root {
+  --paper: #f5efe2; --ink: #3f3220; --ink-soft: #6b5630;
+  --zhu: #9c2f1b; --gold: #bd9a55; --gold-soft: #d8c08a; --water: #7fa8b5;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+html,body { height:100%; font-family:"Kaiti SC","STKaiti","KaiTi","Songti SC",serif; background:#e8dcc0; color:var(--ink); }
+#wrap { display:flex; height:100%; }
+
+/* ===== 左侧：地图 ===== */
+#left { flex:1; position:relative; min-width:0; }
+#mapCanvas { position:absolute; inset:0; width:100%; height:100%; }
+#mapHint { position:absolute; left:12px; top:12px; background:rgba(251,244,228,.92); border:1px solid var(--gold); border-radius:8px; padding:8px 12px; font-size:12px; line-height:1.8; box-shadow:0 6px 18px rgba(74,52,20,.18); }
+#mapHint b { color:var(--zhu); }
+#legend { position:absolute; left:12px; bottom:80px; background:rgba(251,244,228,.92); border:1px solid var(--gold); border-radius:8px; padding:8px 12px; font-size:11px; line-height:2; box-shadow:0 6px 18px rgba(74,52,20,.18); }
+#legend i { display:inline-block; width:12px; height:4px; margin-right:5px; vertical-align:middle; border-radius:2px; }
+
+/* ===== 右侧：面板 ===== */
+#right { width:420px; background:linear-gradient(180deg,#fbf4e4,#f3ead3); border-left:1px solid var(--gold); display:flex; flex-direction:column; overflow-y:auto; }
+header { padding:14px 18px; border-bottom:1px solid var(--gold); background:linear-gradient(180deg,#fbf4e4,#f6eeda); }
+header h1 { font-size:18px; letter-spacing:2px; }
+header h1 em { color:var(--zhu); font-style:normal; }
+#eraBadge { margin-top:6px; font-size:12px; color:var(--ink-soft); }
+#eraBadge b { font-size:24px; color:var(--zhu); margin-right:8px; }
+#eraBadge .lv { border:1px solid var(--gold); border-radius:10px; padding:2px 8px; font-size:11px; }
+
+#dimTabs { display:flex; border-bottom:1px solid var(--gold); background:#f6eeda; }
+#dimTabs button { flex:1; padding:9px 0; border:none; background:transparent; font-family:inherit; font-size:13px; color:var(--ink-soft); cursor:pointer; border-bottom:2px solid transparent; letter-spacing:1px; }
+#dimTabs button.on { color:var(--zhu); border-bottom-color:var(--zhu); font-weight:600; }
+
+#dimPanel { flex:1; padding:14px 18px; overflow-y:auto; }
+.dim-card { background:#fdf9ee; border:1px solid var(--gold); border-radius:8px; padding:12px 14px; margin-bottom:10px; }
+.dim-card h3 { font-size:13px; color:var(--zhu); margin-bottom:6px; letter-spacing:1px; }
+.dim-card .big { font-size:26px; color:var(--ink); font-weight:700; }
+.dim-card .unit { font-size:12px; color:var(--ink-soft); margin-left:4px; }
+.dim-card p { font-size:12px; color:var(--ink-soft); line-height:1.7; margin-top:4px; }
+.kv { display:flex; justify-content:space-between; font-size:12px; padding:3px 0; border-bottom:1px dashed #e5d8b8; }
+.kv:last-child { border-bottom:none; }
+.kv span:first-child { color:var(--ink-soft); }
+.kv span:last-child { color:var(--ink); }
+.tag-row { margin-top:6px; }
+.tag { display:inline-block; background:var(--gold-soft); color:var(--ink); border-radius:10px; padding:2px 10px; font-size:11px; margin-right:6px; }
+
+/* ===== 底部时间轴 ===== */
+#timelineBar { position:absolute; left:0; right:0; bottom:0; background:linear-gradient(180deg,rgba(243,234,213,.97),rgba(251,244,228,.97)); border-top:1px solid var(--gold); padding:8px 16px 10px; box-shadow:0 -4px 16px rgba(74,52,20,.12); }
+#sliderRow { display:flex; align-items:center; gap:12px; }
+#btnPlay { width:38px; height:38px; border-radius:50%; border:2px solid var(--zhu); background:var(--zhu); color:#fdf6e7; font-size:15px; cursor:pointer; flex-shrink:0; }
+#btnPlay:hover { background:#7d2413; }
+#slider { flex:1; -webkit-appearance:none; height:5px; border-radius:3px; background:linear-gradient(90deg,var(--gold-soft),var(--gold)); outline:none; }
+#slider::-webkit-slider-thumb { -webkit-appearance:none; width:18px; height:18px; border-radius:50%; background:var(--zhu); border:3px solid #fdf6e7; cursor:pointer; }
+#tickRow { display:flex; justify-content:space-between; margin-top:5px; padding:0 4px; font-size:10px; color:var(--ink-soft); }
+#tickRow span { cursor:pointer; padding:1px 5px; border-radius:6px; }
+#tickRow span:hover { background:var(--gold-soft); }
+#tickRow span.on { background:var(--zhu); color:#fdf6e7; }
+#footnote { position:absolute; right:12px; bottom:88px; font-size:10px; color:var(--ink-soft); background:rgba(251,244,228,.85); padding:3px 8px; border-radius:6px; }
+</style>
+</head>
+<body>
+<div id="wrap">
+  <div id="left">
+    <canvas id="mapCanvas"></canvas>
+    <div id="mapHint"><b>梅州市域</b>（2區5縣1市）<br/>區縣邊界 · 真實 GeoJSON</div>
+    <div id="legend">
+      <i style="background:#9c2f1b"></i>城垣（土城/磚城）<br/>
+      <i style="background:#bd9a55"></i>現代城區<br/>
+      <i style="background:#7fa8b5"></i>梅江<br/>
+      <i style="background:#8a6a45"></i>區縣界 · 地標
+    </div>
+    <div id="footnote">技術方案：Canvas 2D 自繪 + 手寫等距投影（同 CBDB 仕途流場 2D 引擎思路）</div>
+    <div id="timelineBar">
+      <div id="sliderRow">
+        <button id="btnPlay">▶</button>
+        <input type="range" id="slider" min="0" max="11" value="3" step="1" />
+      </div>
+      <div id="tickRow"></div>
+    </div>
+  </div>
+
+  <div id="right">
+    <header>
+      <h1>梅州 · <em>城市千年变迁</em></h1>
+      <div id="eraBadge"><b id="yrNow">1052</b><span id="nmNow">梅州</span><span class="lv" id="lvNow">州</span></div>
+    </header>
+    <div id="dimTabs">
+      <button data-dim="city" class="on">城市</button>
+      <button data-dim="pop">人口</button>
+      <button data-dim="human">人文</button>
+      <button data-dim="econ">经济</button>
+      <button data-dim="soc">社会</button>
+      <button data-dim="cul">文化</button>
+    </div>
+    <div id="dimPanel"></div>
+  </div>
+</div>
+
+<script src="meizhou-geo.js"></script>
+<script src="meizhou-data.js"></script>
+<script>
+/* ============================================================
+ * 引擎层：手写等距投影 + Canvas 2D（CBDB 仕途流场 2D 同款思路，零依赖）
+ * ============================================================ */
+const canvas = document.getElementById("mapCanvas");
+const ctx = canvas.getContext("2d");
+let W=0, H=0, proj=null, path=null;
+
+function resize(){
+  const r = canvas.parentElement.getBoundingClientRect();
+  const dpr = window.devicePixelRatio || 1;
+  W = r.width; H = r.height;
+  canvas.width = W*dpr; canvas.height = H*dpr;
+  canvas.style.width = W+"px"; canvas.style.height = H+"px";
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  proj = makeFitProj(MEIZHOU_GEO, W, H, 30);
+  draw();
+}
+
+// 手写等距投影（梅州小范围够用，不依赖 d3.projection 系列）
+function makeFitProj(geo, w, h, pad){
+  let minX=Infinity, minY=Infinity, maxX=-Infinity, maxY=-Infinity;
+  function visit(coords){
+    if(typeof coords[0]==='number'){
+      if(coords[0]<minX) minX=coords[0]; if(coords[0]>maxX) maxX=coords[0];
+      if(coords[1]<minY) minY=coords[1]; if(coords[1]>maxY) maxY=coords[1];
+    } else coords.forEach(visit);
+  }
+  geo.features.forEach(f=>visit(f.geometry.coordinates));
+  const dx=maxX-minX, dy=maxY-minY;
+  const s = Math.min((w-pad*2)/dx, (h-pad*2)/dy);
+  const cx=(minX+maxX)/2, cy=(minY+maxY)/2;
+  const tx = w/2 - cx*s, ty = h/2 + cy*s;
+  return function(lonLat){
+    if(!Array.isArray(lonLat)) return null;
+    return [lonLat[0]*s + tx, ty - lonLat[1]*s];
+  };
+}
+
+// 自绘路径（不依赖 d3.geoPath，仕途流场 2D 引擎本质）
+function drawGeom(geom, doMove, doLine){
+  const g = geometryOf(geom);
+  if(!g) return;
+  if(g.type==="Polygon"){
+    g.coordinates.forEach(ring=>drawRing(ring, doMove, doLine));
+  } else if(g.type==="MultiPolygon"){
+    g.coordinates.forEach(poly=>poly.forEach(ring=>drawRing(ring, doMove, doLine)));
+  } else if(g.type==="LineString"){
+    drawRing(g.coordinates, doMove, doLine);
+  } else if(g.type==="MultiLineString"){
+    g.coordinates.forEach(line=>drawRing(line, doMove, doLine));
+  } else if(g.type==="Point"){
+    const p = proj(g.coordinates);
+    doMove(p[0], p[1]);
+  }
+}
+function drawRing(ring, doMove, doLine){
+  ring.forEach((c,i)=>{
+    const p = proj(c);
+    if(i===0) doMove(p[0], p[1]);
+    else doLine(p[0], p[1]);
+  });
+}
+function geometryOf(featureOrGeom){
+  if(!featureOrGeom) return null;
+  if(featureOrGeom.geometry) return featureOrGeom.geometry;
+  if(featureOrGeom.coordinates) return featureOrGeom;
+  return null;
+}
+window.addEventListener("resize", resize);
+
+/* 颜色：区县按梅花色盘 */
+const COUNTY_COLORS = {
+  "梅江區":"#f3e5c2","梅縣區":"#efe0b8","大埔縣":"#efe4c8","豐順縣":"#f0e6ce",
+  "五華縣":"#efe2c4","平遠縣":"#f2e8d0","蕉嶺縣":"#f1e7cf","興寧市":"#efe1c3"
+};
+
+let state = { idx: 3, dim: "city" };
+const T = window.MZ_TIMELINE;
+
+function draw(){
+  ctx.clearRect(0,0,W,H);
+  // 宣纸底
+  ctx.fillStyle = "#efe7d2";
+  ctx.fillRect(0,0,W,H);
+
+  // ① 区县面（真实边界底图）
+  MEIZHOU_GEO.features.forEach(f=>{
+    ctx.beginPath();
+    drawGeom(f, (x,y)=>ctx.moveTo(x,y), (x,y)=>ctx.lineTo(x,y));
+    ctx.closePath();
+    ctx.fillStyle = COUNTY_COLORS[f.properties.name] || "#efe4c8";
+    ctx.fill();
+  });
+  // ② 区县界
+  MEIZHOU_GEO.features.forEach(f=>{
+    ctx.beginPath();
+    drawGeom(f, (x,y)=>ctx.moveTo(x,y), (x,y)=>ctx.lineTo(x,y));
+    ctx.closePath();
+    ctx.strokeStyle = "#a98e5f";
+    ctx.lineWidth = 0.8;
+    ctx.stroke();
+  });
+
+  // ③ 梅江
+  ctx.beginPath();
+  drawGeom({ type:"LineString", coordinates: MZ_RIVER.geom }, (x,y)=>ctx.moveTo(x,y), (x,y)=>ctx.lineTo(x,y));
+  ctx.strokeStyle = "#7fa8b5";
+  ctx.lineWidth = 3;
+  ctx.stroke();
+
+  // ④ 城垣/城区
+  const item = T[state.idx];
+  if(item.wall && item.wall.geom){
+    const isAncient = item.wall.material !== "現代城區";
+    ctx.beginPath();
+    drawGeom({ type:"Polygon", coordinates:[item.wall.geom] }, (x,y)=>ctx.moveTo(x,y), (x,y)=>ctx.lineTo(x,y));
+    ctx.closePath();
+    ctx.fillStyle = isAncient ? "rgba(156,47,27,.20)" : "rgba(189,154,85,.18)";
+    ctx.fill();
+    ctx.strokeStyle = isAncient ? "#9c2f1b" : "#bd9a55";
+    ctx.lineWidth = isAncient ? 2.2 : 1.8;
+    ctx.stroke();
+    if(isAncient){
+      const [x,y] = proj([116.111, 24.309]);
+      ctx.font = "13px KaiTi, STKaiti";
+      ctx.fillStyle = "#9c2f1b";
+      ctx.textAlign = "center";
+      ctx.fillText(item.wall.material + "·" + (item.wall.perimeterM||"") + "m", x, y-8);
+    }
+  }
+
+  // ⑤ 地标
+  const marks = MZ_LANDMARKS.filter(m => m.year <= item.year);
+  marks.forEach(m=>{
+    const [x,y] = proj([m.lon, m.lat]);
+    ctx.beginPath();
+    ctx.arc(x, y, 3.5, 0, Math.PI*2);
+    ctx.fillStyle = "#8a6a45";
+    ctx.fill();
+    ctx.strokeStyle = "#f5efe2";
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.font = "10px KaiTi, STKaiti";
+    ctx.fillStyle = "#3f3220";
+    ctx.textAlign = "left";
+    ctx.fillText(m.name, x+6, y+3);
+  });
+
+  // ⑥ 区县名
+  MEIZHOU_GEO.features.forEach(f=>{
+    const c = f.properties.center || (f.properties.centroid);
+    if(!c) return;
+    const [x,y] = proj(c);
+    ctx.font = "11px KaiTi, STKaiti";
+    ctx.fillStyle = "rgba(63,50,32,.75)";
+    ctx.textAlign = "center";
+    ctx.fillText(f.properties.name, x, y+3);
+  });
+
+  // ⑦ 图题
+  ctx.font = "bold 15px KaiTi, STKaiti";
+  ctx.fillStyle = "#3f3220";
+  ctx.textAlign = "left";
+  ctx.fillText(item.year + "年 · " + item.name, 16, H-150);
+}
+
+/* ============================================================
+ * 面板层：六维卡片
+ * ============================================================ */
+const panel = document.getElementById("dimPanel");
+function renderPanel(){
+  const item = T[state.idx];
+  const d = item[state.dim];
+  let html = "";
+
+  const cityCard = `
+    <div class="dim-card"><h3>🏛 政区 · 城垣</h3>
+      <div class="big">${item.name}</div><span class="unit">${item.level}</span>
+      ${item.wall ? `<div class="kv"><span>城垣</span><span>${item.wall.material}（周长${item.wall.perimeterM||'—'}m）</span></div>
+      <div class="kv"><span>方位</span><span>${item.wall.location||'—'}</span></div>` : `<div class="kv"><span>城垣</span><span>尚无城墙</span></div>`}
+      <p>${item.desc}</p>
+    </div>`;
+
+  const popCard = `
+    <div class="dim-card"><h3>👥 人口</h3>
+      ${item.population.value ? `<div class="big">${(item.population.value/10000).toFixed(1)}<span class="unit">万${item.population.unit||'人'}</span></div>` : `<div class="big">—</div>`}
+      <p>${item.population.note}</p>
+    </div>`;
+
+  const humanCard = `
+    <div class="dim-card"><h3>📜 人文 · 科举</h3>
+      <div class="kv"><span>进士（清·嘉应）</span><span>${item.culture.jinshi}人</span></div>
+      ${item.culture.schools?`<div class="kv"><span>书院</span><span>${item.culture.schools}</span></div>`:""}
+      ${item.culture.note?`<p>${item.culture.note}</p>`:""}
+      <div class="tag-row"><span class="tag">${item.culture.tag}</span></div>
+    </div>
+    <div class="dim-card"><h3>📍 此时地标</h3>
+      ${MZ_LANDMARKS.filter(m=>m.year<=item.year).slice(-4).map(m=>`<div class="kv"><span>${m.name}</span><span>${m.type}</span></div>`).join("")}
+    </div>`;
+
+  const econCard = `
+    <div class="dim-card"><h3>💰 经济</h3>
+      <p>${item.economy.note}</p>
+    </div>`;
+
+  const socCard = `
+    <div class="dim-card"><h3>🏘 社会</h3>
+      <p>${item.society.note}</p>
+    </div>`;
+
+  const culCard = `
+    <div class="dim-card"><h3>🎭 文化</h3>
+      <p>${item.culture.note || "客家文化积淀中…"}</p>
+      <div class="tag-row"><span class="tag">${item.culture.tag}</span></div>
+    </div>`;
+
+  switch(state.dim){
+    case "city": html = cityCard; break;
+    case "pop": html = popCard; break;
+    case "human": html = humanCard; break;
+    case "econ": html = econCard; break;
+    case "soc": html = socCard; break;
+    case "cul": html = culCard; break;
+  }
+  panel.innerHTML = html;
+}
+
+/* ============================================================
+ * 交互层
+ * ============================================================ */
+function update(idx){
+  state.idx = idx;
+  const item = T[idx];
+  document.getElementById("yrNow").textContent = item.year;
+  document.getElementById("nmNow").textContent = item.name;
+  document.getElementById("lvNow").textContent = item.level;
+  document.getElementById("slider").value = idx;
+  document.querySelectorAll("#tickRow span").forEach((s,i)=>s.classList.toggle("on", i===idx));
+  draw();
+  renderPanel();
+}
+
+let playing=false, timer=null;
+document.getElementById("btnPlay").onclick = ()=>{
+  playing = !playing;
+  document.getElementById("btnPlay").textContent = playing ? "⏸" : "▶";
+  if(playing){
+    timer = setInterval(()=>{ update(state.idx>=T.length-1 ? 0 : state.idx+1); }, 1800);
+  } else clearInterval(timer);
+};
+document.getElementById("slider").oninput = e => update(+e.target.value);
+
+const tickRow = document.getElementById("tickRow");
+T.forEach((t,i)=>{
+  const s = document.createElement("span");
+  s.textContent = t.year;
+  s.onclick = ()=>update(i);
+  tickRow.appendChild(s);
+});
+
+document.querySelectorAll("#dimTabs button").forEach(btn=>{
+  btn.onclick = ()=>{
+    document.querySelectorAll("#dimTabs button").forEach(b=>b.classList.remove("on"));
+    btn.classList.add("on");
+    state.dim = btn.dataset.dim;
+    renderPanel();
+  };
+});
+
+resize();
+update(3);
+</script>
+</body>
+</html>

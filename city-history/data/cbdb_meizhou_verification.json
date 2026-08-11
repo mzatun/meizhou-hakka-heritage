@@ -1,0 +1,61 @@
+{
+  "meta": {
+    "title": "CBDB 梅州籍人物 API 验证记录",
+    "verified_at": "2026-08-10",
+    "api_base": "https://cbdb.fas.harvard.edu/cbdbapi/person",
+    "note": "通过 CBDB 开放 REST API 验证梅州籍人物数据可用性。网络恢复后可脚本化批量抓取全量。",
+    "key_finding": "籍贯行政区划 AddrId 8480 = 嘉應直隸州直轄地方，是筛选梅州籍人物的核心键；程乡 AddrId 100488。"
+  },
+  "verified_people": [
+    {
+      "personId": "43846",
+      "name": "蔡蒙吉",
+      "dynasty": "宋",
+      "addr": "程乡",
+      "addrId": 100488,
+      "entryType": "非經常科舉: 科舉制舉-童子舉",
+      "entryYear": 1256,
+      "posting": "司戶參軍（韶州）",
+      "source": "宋人傳記資料索引(電子版)",
+      "note": "12岁神童进士，广东古八贤之一"
+    },
+    {
+      "personId": "358030",
+      "name": "李象元",
+      "dynasty": "清",
+      "addr": "嘉應直隸州直轄地方",
+      "addrId": 8480,
+      "entryType": "進士類: 科舉-進士(籠統)",
+      "entryYear": 1691,
+      "posting": "檢討；鄉試考官（山東省）",
+      "source": "明清進士題名錄索引",
+      "note": "清代嘉應入翰林院第一人，康熙三十年第三甲第90名"
+    },
+    {
+      "personId": "65947",
+      "name": "黃遵憲",
+      "dynasty": "清",
+      "addr": "嘉應直隸州直轄地方",
+      "addrId": 8480,
+      "entryType": "舉人科: 科舉-鄉貢舉人（1876）；貢生門: 拔貢",
+      "entryYear": 1876,
+      "posting": "布政使銜；參贊官（出使日本/英國）；大臣（出使日本）；總領事官（美國舊金山）",
+      "source": "人名權威資料（中研院史語所）",
+      "kinship": ["祖父:黃際昇", "父:黃鴻藻", "子:黃鼎崇/黃履剛/黃璿泰"],
+      "note": "近代中國走向世界第一人；《人境廬詩草》作者；親屬數據完整，可作譜系視圖示範"
+    }
+  ],
+  "not_found": [
+    {
+      "name": "羅芳伯",
+      "status": 404,
+      "note": "CBDB 未收錄（海外華僑領袖不在正史傳記體系內），僑鄉線需自建數據——印證可行性分析中的判斷"
+    }
+  ],
+  "conclusion": {
+    "data_available": true,
+    "field_match": "CBDB 字段（IndexAddr籍貫/EntryType入仕/OfficeName任官/Kinship親屬）與 /api/flow 模型完全對應，可直接映射 edges",
+    "cross_validation_source": "《明清進士題名錄索引》為CBDB與嘉應州志交叉校核提供了同一數據源",
+    "next_step": "網絡恢復後下載 CBDB SQLite 全庫（2026-08-01版），按 AddrId 8480/100488 批量抽取全量梅州籍人物"
+  }
+}
