@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>梅州 · 城市千年变迁｜MapLibre 2D/3D 故事地图</title>
-<link rel="stylesheet" href="vendor/maplibre-gl.css" />
+<link rel="stylesheet" href="vendor/maplibre-gl.css?v=20260817h" />
 <style>
   :root{
     --paper:#efe7d2; --paper2:#f6efe0; --ink:#3f3220; --ink2:#6b5a3e;
@@ -21,6 +21,7 @@
   .lbl-county{font-size:13px;font-weight:bold;color:#5a4a2e;}
   .lbl-land{font-size:11px;color:#5a4a2e;}
   .lbl-wall{font-size:12px;font-weight:bold;color:var(--zhu);background:rgba(246,239,224,.78);padding:1px 5px;border-radius:3px;border:1px solid var(--gold-soft);}
+  .lbl-gate{font-size:11px;font-weight:bold;color:#8a5a2b;background:rgba(246,239,224,.85);padding:1px 4px;border-radius:3px;border:1px solid var(--zhu2);}
   .lbl-river{font-size:10px;color:var(--water);opacity:.85;font-style:italic;}
   /* 右侧面板 */
   #right{width:430px;background:linear-gradient(180deg,#fbf4e4,#f1e7cf);border-left:2px solid var(--gold);display:flex;flex-direction:column;overflow:hidden;}
@@ -56,6 +57,32 @@
   #footnote{position:absolute;left:12px;bottom:10px;font-size:11px;color:rgba(63,50,32,.55);background:rgba(246,239,224,.7);padding:3px 8px;border-radius:4px;pointer-events:none;}
   .legend{position:absolute;right:12px;bottom:12px;background:rgba(246,239,224,.85);border:1px solid var(--gold-soft);border-radius:6px;padding:8px 10px;font-size:11px;color:var(--ink);line-height:1.7;}
   .legend i{display:inline-block;width:12px;height:12px;border-radius:2px;margin-right:5px;vertical-align:-1px;}
+
+  /* 史料气泡（志书图对应地理坐标） */
+  #gazBubble{position:absolute;left:50%;top:38%;transform:translateX(-50%);width:300px;background:rgba(251,244,228,.97);border:1px solid var(--gold);border-radius:10px;box-shadow:0 10px 34px rgba(74,52,20,.32);display:none;z-index:38;padding:0;overflow:hidden;}
+  #gazBubble .gb-head{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:linear-gradient(180deg,#fbf4e4,#f1e7cf);border-bottom:1px solid var(--gold-soft);font-size:13px;color:var(--zhu);font-weight:bold;}
+  #gazBubble .gb-close{cursor:pointer;font-size:13px;color:var(--ink2);border:1px solid var(--gold);border-radius:4px;width:20px;height:20px;text-align:center;line-height:16px;background:var(--paper2);}
+  #gazBubble .gb-body{padding:9px 12px 12px;font-size:12px;color:var(--ink);line-height:1.65;}
+  #gazBubble .gb-body img{width:100%;max-height:150px;object-fit:cover;border-radius:6px;border:1px solid var(--gold-soft);margin-bottom:7px;}
+  #gazBubble .gb-desc{margin-bottom:6px;}
+  #gazBubble .gb-src{font-size:10.5px;color:var(--ink2);margin-bottom:8px;}
+  #gazBubble .gb-btn{font-family:inherit;font-size:11.5px;padding:4px 14px;border:1px solid var(--zhu);color:var(--zhu);background:rgba(156,47,27,.06);border-radius:14px;cursor:pointer;}
+  #gazBubble .gb-btn:hover{background:var(--zhu);color:#fdf6e7;}
+  /* ===== 志书图说面板（光绪嘉应州志·卷首图说） ===== */
+  #gazPanel{position:absolute;left:12px;top:120px;width:340px;max-height:70vh;overflow-y:auto;background:rgba(251,244,228,.97);border:1px solid var(--gold);border-radius:8px;box-shadow:0 8px 28px rgba(74,52,20,.22);display:none;z-index:31;padding:0;}
+  #gazPanel .gz-head{padding:10px 14px 8px;border-bottom:1px solid var(--gold-soft);display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:linear-gradient(180deg,#fbf4e4,#f5ecd6);border-radius:8px 8px 0 0;}
+  #gazPanel .gz-title{font-size:14px;color:var(--zhu);font-weight:bold;letter-spacing:1px;}
+  #gazPanel .gz-close{cursor:pointer;font-size:15px;color:var(--ink2);border:1px solid var(--gold);border-radius:4px;width:22px;height:22px;text-align:center;line-height:18px;background:var(--paper2);}
+  #gazGrid{display:grid;grid-template-columns:1fr 1fr;gap:7px;padding:10px 12px 12px;}
+  .gz-item{cursor:pointer;border:1px solid var(--gold-soft);border-radius:6px;overflow:hidden;background:var(--paper2);transition:.12s;position:relative;}
+  .gz-item:hover{border-color:var(--zhu);box-shadow:0 2px 10px rgba(74,52,20,.18);}
+  .gz-item img{width:100%;height:88px;object-fit:cover;display:block;border-bottom:1px solid var(--gold-soft);}
+  .gz-item .gz-cap{font-size:10.5px;color:var(--ink);padding:4px 6px;line-height:1.4;text-align:center;}
+  #gazBig{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);max-width:86vw;max-height:86vh;background:rgba(251,244,228,.98);border:1px solid var(--gold);border-radius:10px;box-shadow:0 10px 40px rgba(74,52,20,.35);display:none;z-index:40;padding:10px 14px;}
+  #gazBig img{max-width:82vw;max-height:70vh;object-fit:contain;border-radius:6px;border:1px solid var(--gold-soft);}
+  #gazBig .gb-cap{font-size:12px;color:var(--ink);margin-top:6px;text-align:center;line-height:1.6;}
+  #gazBig .gb-cap .gb-src{display:block;font-size:10.5px;color:var(--ink2);margin-top:3px;}
+  #gazBig .gb-close{cursor:pointer;position:absolute;top:6px;right:8px;font-size:14px;color:var(--ink2);border:1px solid var(--gold);border-radius:4px;width:22px;height:22px;text-align:center;line-height:18px;background:var(--paper2);}
   /* maplibre 控件配色 */
   .maplibregl-ctrl-group{background:var(--paper2);border:1px solid var(--gold-soft);}
   /* ===== 故事层（新增） ===== */
@@ -183,10 +210,7 @@
       <div class="omp-head"><span>🗺 古地图 · 控制</span><span class="omp-coll" id="ompColl">▾ 收起</span></div>
       <div class="omp-body" id="ompBody">
         <label class="omp-row"><input type="checkbox" id="ompOn"/> 叠加古地图（需时开启）</label>
-        <div class="omp-row">底图 <select id="ompMap" style="flex:1;font-family:inherit;font-size:11px;padding:2px 4px;border:1px solid var(--gold-soft);border-radius:4px;background:var(--paper2);color:var(--ink);">
-          <option value="jyy">舆地图 · 州域（清）</option>
-          <option value="city">城池图 · 州城（咸丰）</option>
-        </select></div>
+        <div class="omp-row">底图 <select id="ompMap" style="flex:1;font-family:inherit;font-size:11px;padding:2px 4px;border:1px solid var(--gold-soft);border-radius:4px;background:var(--paper2);color:var(--ink);"></select></div>
         <div class="omp-row">透明度 <input type="range" id="ompOpacity" min="5" max="100" value="62"/><span id="ompOpVal">62%</span></div>
         <div class="omp-row omp-grid">
           <button class="omp-btn" data-act="n">↑北移</button>
@@ -199,6 +223,7 @@
         </div>
         <div class="omp-row omp-coords" id="ompCoords"></div>
         <div class="omp-row omp-note">步进 0.002°≈200m · 设置自动保存</div>
+        <div class="omp-row omp-note" id="ompMoveTip" style="display:none;"></div>
       </div>
     </div>
     <div class="legend">
@@ -207,6 +232,26 @@
       <div><i style="background:rgba(156,47,27,.55)"></i>城垣/城区</div>
       <div><i style="background:#8a6a45"></i>地标</div>
     </div>
+
+  <!-- 志书图说面板 -->
+  <div id="gazPanel">
+    <div class="gz-head"><div class="gz-title">📜 志書圖說 · 《光緒嘉應州志》卷首</div><div class="gz-close" onclick="toggleGaz(false)">✕</div></div>
+    <div id="gazGrid"></div>
+  </div>
+  <div id="gazBubble">
+    <div class="gb-head"><span id="gbBTitle"></span><span class="gb-close" onclick="closeGazBubble()">✕</span></div>
+    <div class="gb-body">
+      <img id="gbBImg" src="" alt=""/>
+      <div class="gb-desc" id="gbBDesc"></div>
+      <div class="gb-src" id="gbBSrc"></div>
+      <button class="gb-btn" id="gbBBig" onclick="showGazBig(gazBubbleIdx)">查看大圖</button>
+    </div>
+  </div>
+  <div id="gazBig" onclick="if(event.target===this)closeGazBig()">
+    <div class="gb-close" onclick="closeGazBig()">✕</div>
+    <img id="gbImg" src="" alt=""/>
+    <div class="gb-cap" id="gbCap"></div>
+  </div>
     <div id="footnote">技术方案：MapLibre GL（同 CBDB 仕途流場底圖思路）· 真实底圖=DataV 行政邊界 + OSM 河流 · 2D/3D 雙模式</div>
   </div>
 
@@ -219,6 +264,7 @@
         <button class="btn" id="btn3D">3D 地形</button>
         <button class="btn" id="btnFocus">聚焦老城</button>
         <button class="btn" id="btnAll">全景</button>
+        <button class="btn" id="btnGaz" onclick="toggleGaz()">📜 志書圖說</button>
         <button class="btn" id="btnOldMap">🗺 古地图</button>
         <button class="btn" id="btnStory">📜 故事层</button>
       </div>
@@ -276,12 +322,12 @@
   </div>
 </div>
 
-<script src="vendor/maplibre-gl.js"></script>
-<script src="meizhou-geo.js"></script>
-<script src="meizhou-rivers.js"></script>
-<script src="meizhou-data.js"></script>
-<script src="meizhou-walls-geo.js"></script>
-<script src="meizhou-story.js"></script>
+<script src="vendor/maplibre-gl.js?v=20260817h"></script>
+<script src="meizhou-geo.js?v=20260817h"></script>
+<script src="meizhou-rivers.js?v=20260817h"></script>
+<script src="meizhou-data.js?v=20260817h"></script>
+<script src="meizhou-walls-geo.js?v=20260817h"></script>
+<script src="meizhou-story.js?v=20260817h"></script>
 <script>
 /* ============================================================
  * 梅州城市千年变迁 · MapLibre 2D/3D 故事地圖
@@ -356,15 +402,20 @@ const OLD_MAPS = [
   { id:"jyy",  name:"舆地图 · 州域", url:"images/jiaying_old_map.jpg",
     coords:[[116.001,24.3959],[116.221,24.3959],[116.221,24.2201],[116.001,24.2201]] },
   { id:"city", name:"城池图 · 州城", url:"images/jiaying_city_map.jpg",
-    coords:[[116.0988,24.3165],[116.122,24.3165],[116.122,24.3005],[116.0988,24.3005]] }
+    coords:[[116.0988,24.3165],[116.122,24.3165],[116.122,24.3005],[116.0988,24.3005]] },
+  { id:"ccts", name:"民國測繪圖 · 廣東五萬分一", type:"tiles",
+    tiles:["https://gis.sinica.edu.tw/ccts/file-exists.php?img=China_50K_Guangdong-png-{z}-{x}-{y}"],
+    minzoom:5, maxzoom:17 },
+  { id:"mx1935", name:"梅縣市區全圖 · 1935", url:"images/meixian_1935.jpg",
+    coords:[[116.096,24.318],[116.126,24.318],[116.126,24.302],[116.096,24.302]] }
 ];
 function getOldMap(){ return OLD_MAPS.find(m=>m.id===oldMapId)||OLD_MAPS[0]; }
 function omLoad(){ try{ return JSON.parse(localStorage.getItem("mz_oldmap")||"null"); }catch(e){ return null; } }
 function omSave(){ try{ localStorage.setItem("mz_oldmap", JSON.stringify({coords:oldMapCoords,opacity:oldMapOpacity,on:oldMapOn,mapId:oldMapId})); }catch(e){} }
 const _om = omLoad();
 let oldMapId = _om && _om.mapId ? _om.mapId : "jyy";
-const OLD_MAP_DEFAULT = getOldMap().coords.map(p=>[p[0],p[1]]);
-let oldMapCoords = _om && _om.coords ? _om.coords : OLD_MAP_DEFAULT.map(p=>[p[0],p[1]]);
+const OLD_MAP_DEFAULT = (getOldMap().coords||OLD_MAPS[0].coords).map(p=>[p[0],p[1]]); // tiles 类型无 coords，回退图片默认坐标
+let oldMapCoords = (_om && _om.coords && Array.isArray(_om.coords)) ? _om.coords : OLD_MAP_DEFAULT.map(p=>[p[0],p[1]]);
 let oldMapOpacity = _om && typeof _om.opacity==="number" ? _om.opacity : 0.62;
 let oldMapOn = _om ? !!_om.on : false;   // 默认不叠加，需要时开启
 
@@ -373,7 +424,11 @@ function ensureOldMapLayer(cb){
   const m = getOldMap();
   const tryAdd = ()=>{
     try{
-      map.addSource("oldmap",{ type:"image", url:m.url, coordinates:oldMapCoords });
+      if(m.type==="tiles"){
+        map.addSource("oldmap",{ type:"raster", tiles:m.tiles, tileSize:256, minzoom:m.minzoom||5, maxzoom:m.maxzoom||17 });
+      }else{
+        map.addSource("oldmap",{ type:"image", url:m.url, coordinates:oldMapCoords });
+      }
       map.addLayer({ id:"oldmap-raster", type:"raster", source:"oldmap",
         paint:{ "raster-opacity":oldMapOpacity, "raster-resampling":"linear" } }, "county-fill");
       cb&&cb();
@@ -388,7 +443,7 @@ function switchOldMap(id){
     try{ map.removeLayer("oldmap-raster"); map.removeSource("oldmap"); }catch(e){}
   }
   const m = getOldMap();
-  oldMapCoords = m.coords.map(p=>[p[0],p[1]]);
+  oldMapCoords = (m.coords||OLD_MAP_DEFAULT).map(p=>[p[0],p[1]]);
   const mode = T[idx].year>=1912 ? "modern" : T[idx].year>=1385 ? "mingqing" : "ancient";
   if(oldMapOn) ensureOldMapLayer(()=>applyOldMap(mode));
   updateOldMapUI(); omSave();
@@ -406,6 +461,11 @@ function setOldMapCoords(){
   if(src){ try{ src.setCoordinates(oldMapCoords); }catch(e){} }
 }
 function adjustOldMap(act){
+  if(getOldMap().type==="tiles"){
+    const t=document.getElementById("ompMoveTip");
+    if(t){ t.textContent="瓦片圖已精確對齊，無需微調"; t.style.display="block"; setTimeout(()=>{t.style.display="none";},1800); }
+    return;
+  }
   const c = oldMapCoords;
   const cx=(c[0][0]+c[2][0])/2, cy=(c[0][1]+c[2][1])/2, d=0.002;
   if(act==="n") c.forEach(p=>p[1]+=d);
@@ -421,7 +481,19 @@ function updateOldMapUI(){
   document.getElementById("ompOn").checked = oldMapOn;
   document.getElementById("ompOpacity").value = Math.round(oldMapOpacity*100);
   document.getElementById("ompOpVal").textContent = Math.round(oldMapOpacity*100)+"%";
+  const omSel = document.getElementById("ompMap");
+  if(omSel && omSel.options.length !== OLD_MAPS.length){
+    omSel.innerHTML = "";
+    OLD_MAPS.forEach(m=>{ const o=document.createElement("option"); o.value=m.id; o.textContent=m.name; omSel.appendChild(o); });
+  }
   document.getElementById("ompMap").value = oldMapId;
+  const isTiles = getOldMap().type==="tiles";
+  document.querySelectorAll("#oldMapPanel .omp-btn[data-act]").forEach(b=>{
+    b.disabled = isTiles && b.dataset.act!=="reset";
+    b.style.opacity = isTiles && b.dataset.act!=="reset" ? "0.4" : "1";
+  });
+  const tip=document.getElementById("ompMoveTip");
+  if(tip) tip.textContent = isTiles ? "瓦片圖已精確對齊，無需微調" : "";
   document.getElementById("ompCoords").innerHTML =
     "NW["+oldMapCoords[0][0].toFixed(3)+","+oldMapCoords[0][1].toFixed(3)+"] SE["+oldMapCoords[2][0].toFixed(3)+","+oldMapCoords[2][1].toFixed(3)+"]";
 }
@@ -566,7 +638,9 @@ function renderTimeline(){
   const feats=[];
   const GEO = window.MZ_WALLS_GEO;
   if(GEO && GEO.features && GEO.features.length){
-    const matched = GEO.features.filter(f=>f.properties && f.properties.year===item.year);
+    const matched = GEO.features.filter(f=>f.properties && f.properties.year===item.year && f.geometry.type==="Polygon");
+    GEO.features.filter(f=>f.properties && f.properties.year===item.year && f.geometry.type==="Point")
+      .forEach(f=>{ const c=f.geometry.coordinates; addLabel(c[0],c[1],f.properties.name||"城門","lbl-gate"); });
     matched.forEach(f=>{
       const mat = f.properties.material || "";
       const ancient = mat!=="現代城區";
@@ -640,6 +714,128 @@ playBtn.addEventListener("click",()=>{
   else clearInterval(timer);
 });
 
+
+
+/* ---------- 面板拖拽（志書圖說/古地圖/故事卡） ---------- */
+function makeDraggable(panelId, handleSel){
+  const p=document.getElementById(panelId);
+  const h=p&&p.querySelector(handleSel);
+  if(!p||!h) return;
+  let sx,sy,ox,oy,moved=false,drag=false;
+  h.addEventListener("mousedown",e=>{
+    moved=false; drag=false;               // 每次按下都重置，防 moved 残留吞掉点击
+    if(e.target.closest("button,input,select,label,.gz-close,.sc-close,.omp-coll")) return;
+    drag=true; sx=e.clientX; sy=e.clientY;
+    const r=p.getBoundingClientRect(); ox=r.left; oy=r.top;
+    e.preventDefault();
+  });
+  document.addEventListener("mousemove",e=>{
+    if(!drag) return;
+    const dx=e.clientX-sx, dy=e.clientY-sy;
+    if(Math.abs(dx)>3||Math.abs(dy)>3) moved=true;
+    if(moved){ p.style.left=(ox+dx)+"px"; p.style.top=(oy+dy)+"px"; p.style.right="auto"; p.style.bottom="auto"; }
+  });
+  document.addEventListener("mouseup",()=>{
+    if(moved){
+      const kill=ev=>{ ev.stopPropagation(); ev.preventDefault(); document.removeEventListener("click",kill,true); };
+      document.addEventListener("click",kill,true);
+      setTimeout(()=>document.removeEventListener("click",kill,true),80);
+    }
+    moved=false; drag=false;               // 关键：mouseup 后重置，防止后续点击被误吞
+  });
+}
+function bindDrag(panelId, handleSel){
+  const try_=()=>{
+    const p=document.getElementById(panelId);
+    if(p && p.querySelector(handleSel)){ makeDraggable(panelId, handleSel); return; }
+    setTimeout(try_, 400);
+  };
+  try_();
+}
+window.addEventListener("load",()=>{
+  bindDrag("gazPanel",".gz-head");
+  bindDrag("oldMapPanel",".omp-head");
+  bindDrag("storyCard",".sc-head");
+});
+
+/* ---------- 志书图说（《光绪嘉应州志》卷首图说 16 图，2026-08-17 新收史料） ---------- */
+const GAZ_IMAGES = [
+  { f:"24_嘉應州輿圖(疆域總圖).jpg", t:"嘉應州輿圖 · 疆域總圖", d:"卷首圖第一：有圖有說統入地形志。圖載每格方十里，州境北極出地最北25度06分、最南24度19分", y:"光緒二十四年(1898)", geo:{type:"aoi", bounds:[[116.00,24.22],[116.225,24.40]]} },
+  { f:"25_嘉應州輿圖續(含經緯度表).jpg", t:"嘉應州輿圖續 · 經緯度表", d:"合三十六堡，東西一百二十里有奇，南北一百五十里有奇", y:"1898", geo:{type:"aoi", bounds:[[116.00,24.22],[116.225,24.40]]} },
+  { f:"27_嘉應州總圖+四縣圖.jpg", t:"嘉應州總圖 · 四縣圖", d:"州域總圖與興寧、長樂、平遠、鎮平四縣圖", y:"1898", geo:{type:"aoi", bounds:[[115.70,23.90],[116.60,24.70]]} },
+  { f:"28_程鄉縣圖.jpg", t:"程鄉縣圖", d:"附郭縣圖（今梅江/梅縣區一帶）", y:"1898", geo:{type:"aoi", bounds:[[116.00,24.22],[116.23,24.35]]} },
+  { f:"29_城池圖.jpg", t:"城池圖 ★", d:"州城圖：城周九百八十五丈、高連女牆二丈六尺、厚二丈，城門五皆有樓；南曰老南門樓曰凌風。上南下北，東北角有折", y:"1898", geo:{type:"aoi", bounds:[[116.104,24.304],[116.118,24.315]]} },
+  { f:"30_學宮圖.jpg", t:"學宮圖", d:"學宮（文廟）在城內，戟門左名宦祠、右鄉賢祠，前泮池櫺星門", y:"1898", geo:{type:"poi", lon:116.111, lat:24.308, zoom:15} },
+  { f:"31_州署圖.jpg", t:"州署圖", d:"州署衙門佈局（今梅江區政府一帶）", y:"1898", geo:{type:"poi", lon:116.1105, lat:24.3105, zoom:15} },
+  { f:"32_營汛圖.jpg", t:"營汛圖", d:"營汛防務佈防（州城內）", y:"1898", geo:{type:"aoi", bounds:[[116.105,24.305],[116.117,24.314]]} },
+  { f:"33_津梁圖.jpg", t:"津梁圖", d:"橋渡津梁分佈（梅江/程江，案例B 素材）", y:"1898", geo:{type:"aoi", bounds:[[116.100,24.298],[116.140,24.310]]} },
+  { f:"34_市廛圖.jpg", t:"市廛圖", d:"市場商業街區（凌風路/下市，案例C 素材）", y:"1898", geo:{type:"aoi", bounds:[[116.107,24.306],[116.122,24.311]]} },
+  { f:"35_坊都圖.jpg", t:"坊都圖", d:"街坊都圖（攀桂坊/紅杏坊等）", y:"1898", geo:{type:"aoi", bounds:[[116.103,24.305],[116.120,24.312]]} },
+  { f:"36_寺觀圖.jpg", t:"寺觀圖", d:"寺廟道觀分佈（案例A 物質載體）", y:"1898", geo:{type:"aoi", bounds:[[116.104,24.302],[116.120,24.315]]} },
+  { f:"37_學宮圖二.jpg", t:"學宮圖（二）", d:"學宮另一幅", y:"1898", geo:{type:"poi", lon:116.111, lat:24.308, zoom:15} },
+  { f:"38_書院圖.jpg", t:"書院圖 ★", d:"書院分佈（培風/七賢/錦江/周溪/東山書院，案例A 核心）", y:"1898", geo:{type:"aoi", bounds:[[116.108,24.305],[116.124,24.313]]} },
+  { f:"39_祠廟圖.jpg", t:"祠廟圖 ★", d:"祠廟分佈（案例A 核心）", y:"1898", geo:{type:"aoi", bounds:[[116.105,24.305],[116.117,24.314]]} },
+  { f:"40_墳墓圖.jpg", t:"墳墓圖", d:"塚墓（州城郊外）", y:"1898", geo:{type:"aoi", bounds:[[116.100,24.298],[116.120,24.312]]} }
+];
+function toggleGaz(force){
+  const p=document.getElementById("gazPanel");
+  const show = force===undefined ? (getComputedStyle(p).display==="none") : force;
+  p.style.display = show?"block":"none";
+  document.getElementById("btnGaz").classList.toggle("active",show);
+  if(show) renderGazGrid();
+}
+function renderGazGrid(){
+  const g=document.getElementById("gazGrid"); g.innerHTML="";
+  GAZ_IMAGES.forEach((im,i)=>{
+    const d=document.createElement("div"); d.className="gz-item";
+    d.innerHTML = `<img src="images/gazetteer/${im.f}" loading="lazy" alt="${im.t}"/><div class="gz-cap">${im.t}<br><span style="color:var(--ink2);font-size:9.5px">${im.y}</span></div>`;
+    d.onclick=()=>showGazOnMap(i);
+    g.appendChild(d);
+  });
+}
+function showGazBig(i){
+  const im=GAZ_IMAGES[i];
+  document.getElementById("gbImg").src="images/gazetteer/"+im.f;
+  document.getElementById("gbCap").innerHTML = `<b>${im.t}</b>（${im.y}）<br>${im.d}<span class="gb-src">出處：《光緒嘉應州志》卷首·圖說（國圖 NLC403 掃描本）</span>`;
+  document.getElementById("gazBig").style.display="block";
+}
+function closeGazBig(){ document.getElementById("gazBig").style.display="none"; }
+
+/* ---------- 志书图 → 地图定位（Geo-IIIF 落位）+ 史料气泡 ---------- */
+let gazBubbleIdx = -1;
+function showGazOnMap(i){
+  const im = GAZ_IMAGES[i];
+  gazBubbleIdx = i;
+  clearGazGeo();
+  if(im.geo && im.geo.type==="aoi"){
+    const b = im.geo.bounds;
+    try{ map.fitBounds([[b[0][0],b[0][1]],[b[1][0],b[1][1]]],{padding:{top:90,bottom:90,left:100,right:120},duration:900,maxZoom:14.6}); }catch(e){}
+    if(!map.getSource("gaz-aoi")) map.addSource("gaz-aoi",{type:"geojson",data:{type:"FeatureCollection",features:[]}});
+    if(!map.getLayer("gaz-aoi-fill")) map.addLayer({id:"gaz-aoi-fill",type:"fill",source:"gaz-aoi",paint:{"fill-color":"#bd9a55","fill-opacity":0.22}});
+    if(!map.getLayer("gaz-aoi-line")) map.addLayer({id:"gaz-aoi-line",type:"line",source:"gaz-aoi",paint:{"line-color":"#9c2f1b","line-width":2,"line-dasharray":[2,2]}});
+    try{ map.getSource("gaz-aoi").setData({type:"FeatureCollection",features:[{type:"Feature",properties:{},geometry:{type:"Polygon",coordinates:[[[b[0][0],b[0][1]],[b[1][0],b[0][1]],[b[1][0],b[1][1]],[b[0][0],b[1][1]],[b[0][0],b[0][1]]]]}}]}); }catch(e){}
+  } else if(im.geo && im.geo.type==="poi"){
+    try{ map.flyTo({center:[im.geo.lon,im.geo.lat],zoom:im.geo.zoom||14.5,duration:1100}); }catch(e){}
+    if(!map.getSource("gaz-poi")) map.addSource("gaz-poi",{type:"geojson",data:{type:"FeatureCollection",features:[]}});
+    if(!map.getLayer("gaz-poi-c")) map.addLayer({id:"gaz-poi-c",type:"circle",source:"gaz-poi",paint:{"circle-radius":9,"circle-color":"#9c2f1b","circle-stroke-color":"#fdf6e7","circle-stroke-width":2.5}});
+    try{ map.getSource("gaz-poi").setData({type:"FeatureCollection",features:[{type:"Feature",properties:{},geometry:{type:"Point",coordinates:[im.geo.lon,im.geo.lat]}}]}); }catch(e){}
+  }
+  showGazBubble(i);
+}
+function clearGazGeo(){
+  try{ if(map.getSource("gaz-aoi")) map.getSource("gaz-aoi").setData({type:"FeatureCollection",features:[]}); }catch(e){}
+  try{ if(map.getSource("gaz-poi")) map.getSource("gaz-poi").setData({type:"FeatureCollection",features:[]}); }catch(e){}
+}
+function showGazBubble(i){
+  const im = GAZ_IMAGES[i];
+  const b = document.getElementById("gazBubble");
+  document.getElementById("gbBImg").src = "images/gazetteer/"+im.f;
+  document.getElementById("gbBTitle").textContent = im.t+"（"+im.y+"）";
+  document.getElementById("gbBDesc").textContent = im.d;
+  document.getElementById("gbBSrc").textContent = "出處：《光緒嘉應州志》卷首·圖說（國圖 NLC403 掃描本）";
+  b.style.display = "block";
+}
+function closeGazBubble(){ document.getElementById("gazBubble").style.display="none"; clearGazGeo(); }
 /* ---------- 2D / 3D 切換 ---------- */
 const btn2D=document.getElementById("btn2D"), btn3D=document.getElementById("btn3D");
 function setMode(mode){
