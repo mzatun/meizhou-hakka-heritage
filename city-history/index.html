@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>梅州 · 城市千年变迁｜MapLibre 2D/3D 故事地图</title>
-<link rel="stylesheet" href="vendor/maplibre-gl.css?v=20260817h" />
+<link rel="stylesheet" href="vendor/maplibre-gl.css?v=20260817m" />
 <style>
   :root{
     --paper:#efe7d2; --paper2:#f6efe0; --ink:#3f3220; --ink2:#6b5a3e;
@@ -68,6 +68,20 @@
   #gazBubble .gb-src{font-size:10.5px;color:var(--ink2);margin-bottom:8px;}
   #gazBubble .gb-btn{font-family:inherit;font-size:11.5px;padding:4px 14px;border:1px solid var(--zhu);color:var(--zhu);background:rgba(156,47,27,.06);border-radius:14px;cursor:pointer;}
   #gazBubble .gb-btn:hover{background:var(--zhu);color:#fdf6e7;}
+  /* 历史 POI 图标气泡 */
+  .poi-marker{display:flex;flex-direction:column;align-items:center;cursor:pointer;pointer-events:auto;transform:translate(-50%,-100%);}
+  .poi-marker img{width:34px;height:34px;border-radius:8px;box-shadow:0 2px 8px rgba(74,52,20,.3);transition:.15s;background:rgba(246,239,224,.95);}
+  .poi-marker:hover img{transform:scale(1.18);box-shadow:0 4px 14px rgba(156,47,27,.4);}
+  .poi-marker span{font-size:10px;color:var(--ink);background:rgba(246,239,224,.88);border:1px solid var(--gold-soft);border-radius:8px;padding:0 5px;margin-top:2px;white-space:nowrap;text-shadow:0 0 3px #f6efe0;}
+  .poi-marker:hover span{color:var(--zhu);font-weight:bold;}
+  #poiBubble{position:absolute;left:50%;top:38%;transform:translateX(-50%);width:310px;background:rgba(251,244,228,.97);border:1px solid var(--gold);border-radius:10px;box-shadow:0 10px 34px rgba(74,52,20,.32);display:none;z-index:39;padding:0;overflow:hidden;}
+  #poiBubble .gb-head{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:linear-gradient(180deg,#fbf4e4,#f1e7cf);border-bottom:1px solid var(--gold-soft);font-size:13px;color:var(--zhu);font-weight:bold;}
+  #poiBubble .gb-close{cursor:pointer;font-size:13px;color:var(--ink2);border:1px solid var(--gold);border-radius:4px;width:20px;height:20px;text-align:center;line-height:16px;background:var(--paper2);}
+  #poiBubble .gb-body{padding:10px 12px 12px;font-size:12px;color:var(--ink);line-height:1.7;}
+  #poiBubble .gb-meta{display:flex;gap:6px;margin-bottom:7px;flex-wrap:wrap;}
+  #poiBubble .gb-tag{font-size:10.5px;padding:2px 8px;border-radius:10px;background:rgba(156,47,27,.08);color:var(--zhu);border:1px solid var(--gold-soft);}
+  #poiBubble .gb-desc{margin-bottom:6px;}
+  #poiBubble .gb-src{font-size:10.5px;color:var(--ink2);border-top:1px dashed var(--gold-soft);padding-top:6px;}
   /* ===== 志书图说面板（光绪嘉应州志·卷首图说） ===== */
   #gazPanel{position:absolute;left:12px;top:120px;width:340px;max-height:70vh;overflow-y:auto;background:rgba(251,244,228,.97);border:1px solid var(--gold);border-radius:8px;box-shadow:0 8px 28px rgba(74,52,20,.22);display:none;z-index:31;padding:0;}
   #gazPanel .gz-head{padding:10px 14px 8px;border-bottom:1px solid var(--gold-soft);display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:linear-gradient(180deg,#fbf4e4,#f5ecd6);border-radius:8px 8px 0 0;}
@@ -222,7 +236,14 @@
           <button class="omp-btn" data-act="reset">重置</button>
         </div>
         <div class="omp-row omp-coords" id="ompCoords"></div>
-        <div class="omp-row omp-note">步进 0.002°≈200m · 设置自动保存</div>
+        <div class="omp-row"><span style="flex-shrink:0">步長</span>
+          <select id="ompStep" style="flex:1;font-family:inherit;font-size:11px;padding:2px 4px;border:1px solid var(--gold-soft);border-radius:4px;background:var(--paper2);color:var(--ink);">
+            <option value="0.0005">精細 50m</option>
+            <option value="0.001">細 100m</option>
+            <option value="0.002" selected>標準 200m</option>
+            <option value="0.005">粗 500m</option>
+          </select></div>
+        <div class="omp-row omp-note">設置自動保存</div>
         <div class="omp-row omp-note" id="ompMoveTip" style="display:none;"></div>
       </div>
     </div>
@@ -247,6 +268,14 @@
       <button class="gb-btn" id="gbBBig" onclick="showGazBig(gazBubbleIdx)">查看大圖</button>
     </div>
   </div>
+  <div id="poiBubble">
+    <div class="gb-head"><span id="pbTitle"></span><span class="gb-close" onclick="closePoiBubble()">✕</span></div>
+    <div class="gb-body">
+      <div class="gb-meta" id="pbMeta"></div>
+      <div class="gb-desc" id="pbDesc"></div>
+      <div class="gb-src" id="pbSrc"></div>
+    </div>
+  </div>
   <div id="gazBig" onclick="if(event.target===this)closeGazBig()">
     <div class="gb-close" onclick="closeGazBig()">✕</div>
     <img id="gbImg" src="" alt=""/>
@@ -264,6 +293,7 @@
         <button class="btn" id="btn3D">3D 地形</button>
         <button class="btn" id="btnFocus">聚焦老城</button>
         <button class="btn" id="btnAll">全景</button>
+        <button class="btn" id="btnPois" onclick="togglePois()">🏛 歷史POI</button>
         <button class="btn" id="btnGaz" onclick="toggleGaz()">📜 志書圖說</button>
         <button class="btn" id="btnOldMap">🗺 古地图</button>
         <button class="btn" id="btnStory">📜 故事层</button>
@@ -322,12 +352,13 @@
   </div>
 </div>
 
-<script src="vendor/maplibre-gl.js?v=20260817h"></script>
-<script src="meizhou-geo.js?v=20260817h"></script>
-<script src="meizhou-rivers.js?v=20260817h"></script>
-<script src="meizhou-data.js?v=20260817h"></script>
-<script src="meizhou-walls-geo.js?v=20260817h"></script>
-<script src="meizhou-story.js?v=20260817h"></script>
+<script src="vendor/maplibre-gl.js?v=20260817m"></script>
+<script src="meizhou-geo.js?v=20260817m"></script>
+<script src="meizhou-rivers.js?v=20260817m"></script>
+<script src="meizhou-data.js?v=20260817m"></script>
+<script src="meizhou-walls-geo.js?v=20260817m"></script>
+<script src="meizhou-story.js?v=20260817m"></script>
+<script src="meizhou-pois.js?v=20260817m"></script>
 <script>
 /* ============================================================
  * 梅州城市千年变迁 · MapLibre 2D/3D 故事地圖
@@ -407,7 +438,9 @@ const OLD_MAPS = [
     tiles:["https://gis.sinica.edu.tw/ccts/file-exists.php?img=China_50K_Guangdong-png-{z}-{x}-{y}"],
     minzoom:5, maxzoom:17 },
   { id:"mx1935", name:"梅縣市區全圖 · 1935", url:"images/meixian_1935.jpg",
-    coords:[[116.096,24.318],[116.126,24.318],[116.126,24.302],[116.096,24.302]] }
+    coords:[[116.096,24.318],[116.126,24.318],[116.126,24.302],[116.096,24.302]] },
+  { id:"ccts16", name:"民國測繪圖·老城(可微調)", url:"images/ccts_laocheng_z16.jpg",
+    coords:[[116.09802,24.31707],[116.12,24.31707],[116.12,24.29704],[116.09802,24.29704]] }
 ];
 function getOldMap(){ return OLD_MAPS.find(m=>m.id===oldMapId)||OLD_MAPS[0]; }
 function omLoad(){ try{ return JSON.parse(localStorage.getItem("mz_oldmap")||"null"); }catch(e){ return null; } }
@@ -460,14 +493,19 @@ function setOldMapCoords(){
   const src = map.getSource("oldmap");
   if(src){ try{ src.setCoordinates(oldMapCoords); }catch(e){} }
 }
+let ompStep = 0.002;
+document.addEventListener("DOMContentLoaded",()=>{
+  const ss=document.getElementById("ompStep");
+  if(ss) ss.addEventListener("change",()=>{ ompStep = parseFloat(ss.value); });
+});
 function adjustOldMap(act){
   if(getOldMap().type==="tiles"){
     const t=document.getElementById("ompMoveTip");
     if(t){ t.textContent="瓦片圖已精確對齊，無需微調"; t.style.display="block"; setTimeout(()=>{t.style.display="none";},1800); }
     return;
   }
-  const c = oldMapCoords;
-  const cx=(c[0][0]+c[2][0])/2, cy=(c[0][1]+c[2][1])/2, d=0.002;
+  const c = oldMapCoords, d = ompStep;
+  const cx=(c[0][0]+c[2][0])/2, cy=(c[0][1]+c[2][1])/2;
   if(act==="n") c.forEach(p=>p[1]+=d);
   if(act==="s") c.forEach(p=>p[1]-=d);
   if(act==="e") c.forEach(p=>p[0]+=d);
@@ -650,14 +688,7 @@ function renderTimeline(){
       feats.push(clone);
     });
   }
-  // 无精确数据时回退到示意性 wall.geom
-  if(feats.length===0 && item.wall && item.wall.geom){
-    const ancient = item.wall.material!=="現代城區";
-    const h = ancient ? 14 : (item.wall.material==="舊城牆拆除"?8:55);
-    feats.push({ type:"Feature",
-      properties:{ ancient:ancient?1:0, height:h, name:item.wall.material+"·"+item.year },
-      geometry:{ type:"Polygon", coordinates:[item.wall.geom] } });
-  }
+  // 示意城墙框已隐藏（2026-08-17 应要求），仅精确配准数据才渲染
   const ws = map.getSource("walls");
   if(ws) ws.setData({ type:"FeatureCollection", features:feats });
 
@@ -682,7 +713,8 @@ function renderTimeline(){
     const n=labelGeom.length-1; lon/=n; lat/=n;
     addLabel(lon,lat,labelText,"lbl-wall");
   }
-  LAND.filter(m=>m.year<=item.year).forEach(m=>{
+  if(poiOn) renderPois();  // 历史 POI（图标气泡）；未开启时用简洁文字地标
+  if(!poiOn) LAND.filter(m=>m.year<=item.year).forEach(m=>{
     addLabel(m.lon,m.lat,m.name,"lbl-land");
   });
 
@@ -757,6 +789,46 @@ window.addEventListener("load",()=>{
   bindDrag("oldMapPanel",".omp-head");
   bindDrag("storyCard",".sc-head");
 });
+
+
+/* ---------- 历史 POI（图标气泡 + 时间过滤 + 详情） ---------- */
+let poiOn = false, poiMarkers = [];
+function togglePois(force){
+  poiOn = force===undefined ? !poiOn : force;
+  document.getElementById("btnPois").classList.toggle("active",poiOn);
+  renderPois();
+}
+function mergedPois(){
+  const seen = new Set(), out = [];
+  (window.MZ_POIS||[]).forEach(p=>{ seen.add(p.name); out.push(p); });
+  (window.MZ_LANDMARKS||[]).forEach(l=>{
+    if(!seen.has(l.name)) out.push({ name:l.name, lon:l.lon, lat:l.lat, year:l.year||479,
+      cat:"古迹", icon:"gate", desc:l.story||"", source:"现有地标" });
+  });
+  return out;
+}
+function renderPois(){
+  clearPois();
+  if(!poiOn || typeof map==="undefined" || !map.loaded()) return;
+  const curYear = T[idx].year;
+  mergedPois().filter(p=>p.year<=curYear).forEach(p=>{
+    const el = document.createElement("div");
+    el.className = "poi-marker";
+    el.innerHTML = `<img src="icons/hist/${p.icon||"gate"}.png" alt=""/><span>${p.name}</span>`;
+    el.addEventListener("click",()=>showPoiBubble(p));
+    try{ poiMarkers.push(new maplibregl.Marker({element:el}).setLngLat([p.lon,p.lat]).addTo(map)); }catch(e){}
+  });
+}
+function clearPois(){ poiMarkers.forEach(m=>m.remove()); poiMarkers=[]; }
+function showPoiBubble(p){
+  document.getElementById("pbTitle").textContent = p.name;
+  document.getElementById("pbMeta").innerHTML =
+    `<span class="gb-tag">${p.cat||"古迹"}</span><span class="gb-tag">${p.year}年</span>`;
+  document.getElementById("pbDesc").textContent = p.desc||"";
+  document.getElementById("pbSrc").textContent = "出處："+(p.source||"史料");
+  document.getElementById("poiBubble").style.display = "block";
+}
+function closePoiBubble(){ document.getElementById("poiBubble").style.display="none"; }
 
 /* ---------- 志书图说（《光绪嘉应州志》卷首图说 16 图，2026-08-17 新收史料） ---------- */
 const GAZ_IMAGES = [
@@ -1066,26 +1138,11 @@ function ensureUrbanLayer(cb){
   tryAdd();
 }
 function renderUrban(){
+  // 城区范围框已隐藏（2026-08-17 应要求，示意框与民国图叠加干扰；数据保留在 STORY.urbanGrowth）
   const src = map.getSource("urban");
-  if(!src) return;
-  const curYear = T[idx].year;
   const urbanLabel=document.getElementById("urbanLabel");
-  // ★ 年轮式叠加：显示 <= 当前年份的所有城区切片（老→新，透明度递增强调最新）
-  const layers=[];
-  (STORY.urbanGrowth||[]).forEach(u=>{
-    if(u.year<=curYear)
-      layers.push({ type:"Feature", properties:{year:u.year,label:u.label,latest:(u.year===curYear?1:0)},
-                    geometry:{ type:"Polygon", coordinates:[u.geom] } });
-  });
-  if(layers.length){
-    src.setData({ type:"FeatureCollection", features:layers });
-    const latest = layers[layers.length-1].properties;
-    urbanLabel.textContent = "城区范围 · "+latest.label+(layers.length>1?("（历代轮廓 "+layers.length+" 环叠加）"):"");
-    urbanLabel.style.display="block";
-  } else {
-    src.setData({ type:"FeatureCollection", features:[] });
-    urbanLabel.style.display="none";
-  }
+  if(src){ try{ src.setData({ type:"FeatureCollection", features:[] }); }catch(e){} }
+  if(urbanLabel) urbanLabel.style.display="none";
 }
 
 /* ---------- 古地名铭牌 ---------- */
