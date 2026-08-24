@@ -236,11 +236,8 @@ body{
 ============================================================ */
 const CONFIG={
   center:[115.0,25.2],zoom:5.2,pitch:0,      // 默认 2D 平视；开「地形立体」开关才转 3D 俯冲
-  basemapTiles:[
-    "https://webrd01.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}",
-    "https://webrd02.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}",
-    "https://webrd03.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}"
-  ],
+  reliefImage:{url:"assets/relief.webp",
+    coordinates:[[67.5,55.77657],[140.625,55.77657],[140.625,16.63619],[67.5,16.63619]]},
   terrainTiles:"https://demotiles.maplibre.org/terrain-tiles/{z}/{x}/{y}.png", // terrarium 编码
   provinceUrl:"https://geo.datav.aliyun.com/areas_v3/bound/100000_full.json",
   cityBoundBase:"https://geo.datav.aliyun.com/areas_v3/bound/"  // {adcode}.json 市界
@@ -294,24 +291,23 @@ map.on("load",()=>{
   loadProvince();              // 省界骨架
   loadPolityRegions();         // 重点2：政区套合 AOI
   addPoints();                 // 代表点
-  addMarkIcons();               // 地理标注 SVG 符号（山/古道/祖地/河）
+  addMarkIcons();               // 地理标注 SVG + 木刻山符号（山符号加载完自动挂山脉层）
   addGeoMark();                 // 地理标注（突出字体）
   bindInteractions();
   setTimeout(()=>{const l=document.getElementById("loading");if(l){l.style.opacity=0;setTimeout(()=>l.remove(),600);}},600);
 });
 
 function addBasemap(){
-  map.addSource("basemap",{type:"raster",tiles:CONFIG.basemapTiles,tileSize:256,attribution:"© 高德地图"});
-  map.addLayer({id:"basemap",type:"raster",source:"basemap",paint:{"raster-opacity":0.42}});
+  // 国风分层设色地形底图（与迁徙地图同款 relief 图，image source 贴地）
+  map.addSource("relief",{type:"image",url:CONFIG.reliefImage.url,coordinates:CONFIG.reliefImage.coordinates});
+  map.addLayer({id:"relief-layer",type:"raster",source:"relief",paint:{"raster-opacity":1}});
 }
 
 /* 重点1：地形数据 —— 默认 2D 平面 + hillshade 山体阴影（晕渲即可见地形感）
    打开「地形立体」开关时才 setTerrain 切 3D 俯冲（与开关状态严格一致） */
 function addTerrainAndSky(){
-  // DEM 供「地形立体」3D 开关；默认 2D 叠加山体阴影增强地形感（原始风格）
+  // DEM 仅供「地形立体」3D 开关（底图已是国风分层设色地形）
   map.addSource("terrain",{type:"raster-dem",tiles:[CONFIG.terrainTiles],encoding:"terrarium",tileSize:256});
-  map.addLayer({id:"hillshade",type:"hillshade",source:"terrain",
-    paint:{"hillshade-exaggeration":0.6,"hillshade-shadow-color":"#5C4A2E","hillshade-highlight-color":"#F5EAD2","hillshade-accent-color":"#B09A6B"}});
   map.once("idle",()=>map.fitBounds([[108.5,20.8],[122.5,32.0]],{padding:{top:80,bottom:120,left:40,right:340},duration:1800}));
 }
 
@@ -351,10 +347,10 @@ function addGeoMark(){
     geometry:{type:"Point",coordinates:g.coord}}))};
   map.addSource("geomark",{type:"geojson",data:fc});
   map.addLayer({id:"geomark-l",type:"symbol",source:"geomark",
-    layout:{"icon-image":["get","icon"],"icon-size":1.5,"icon-allow-overlap":true,
+    layout:{"icon-image":["get","icon"],"icon-size":0.85,"icon-allow-overlap":true,
       "text-field":["concat",["get","name"],"\n",["get","tag"]],
-      "text-size":13,"text-offset":[0,1.3],"text-line-height":1.3,"text-font":["Noto Sans CJK SC Regular"]},
-    paint:{"text-color":"#8A5A2A","text-halo-color":"#FBF4E4","text-halo-width":2}});
+      "text-size":12,"text-offset":[0,1.1],"text-line-height":1.3,"text-font":["Noto Sans CJK SC Regular"]},
+    paint:{"text-color":"#6B5630","text-halo-color":"#FBF4E4","text-halo-width":1.4}});
 }
 /* 地理标注 SVG 符号：山 / 古道 / 祖地 / 河 */
 const MARK_ICONS={
@@ -369,6 +365,30 @@ function addMarkIcons(){
     img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
     img.onload=()=>{ if(!map.hasImage('mark-'+k)) map.addImage('mark-'+k,img); };
   });
+  // 木刻山符号（迁徙地图同款国风山形，zuodong 资产）；全部加载完成后才挂山脉符号层
+  const mountFiles=["assets/zuodong/m1-0.png","assets/zuodong/m2-0.png","assets/zuodong/m3-0.png"];
+  let mLoaded=0;
+  mountFiles.forEach((f,i)=>{
+    const img=new Image();
+    img.src=f;
+    img.onload=()=>{ if(!map.hasImage('mount'+(i+1))) map.addImage('mount'+(i+1),img); mLoaded++; if(mLoaded===mountFiles.length) addMountSymbols(); };
+    img.onerror=()=>{ mLoaded++; if(mLoaded===mountFiles.length) addMountSymbols(); };
+  });
+}
+/* 山脉点位：木刻山符号散布（国风山形，呼应"地形影响传播"） */
+const MOUNTS=[
+  {name:"南岭",coord:[112.6,24.9]},{name:"武夷山",coord:[117.2,27.6]},
+  {name:"罗霄山",coord:[114.1,26.6]},{name:"大庾岭",coord:[114.4,25.4]},
+  {name:"九连山",coord:[114.6,24.6]},{name:"莲花山",coord:[115.4,23.7]},
+  {name:"博平岭",coord:[116.9,25.0]},{name:"玳瑁山",coord:[116.6,24.9]},
+  {name:"骑田岭",coord:[112.9,25.5]},{name:"九嶷山",coord:[112.0,25.7]}
+];
+function addMountSymbols(){
+  const fc={type:"FeatureCollection",features:MOUNTS.map((m,i)=>({type:"Feature",
+    properties:{icon:"mount"+((i%3)+1),name:m.name},geometry:{type:"Point",coordinates:m.coord}}))};
+  map.addSource("mounts",{type:"geojson",data:fc});
+  map.addLayer({id:"mounts-l",type:"symbol",source:"mounts",
+    layout:{"icon-image":["get","icon"],"icon-size":0.6,"icon-allow-overlap":true}});
 }
 
 /* ============================================================
