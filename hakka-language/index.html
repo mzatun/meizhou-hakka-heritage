@@ -77,6 +77,8 @@ body{
   margin-top:7px;cursor:pointer;font-size:13px;line-height:1.5;transition:.15s}
 .s-item:hover{border-color:var(--zhu);background:var(--tag)}
 .s-item .src{font-size:11px;color:var(--ink-faint)}
+.geo-img{margin-top:9px}
+.geo-img img{width:100%;border-radius:9px;border:1px solid var(--gold-soft);box-shadow:var(--elev-sm);display:block}
 
 #map{position:absolute;inset:0;background:var(--map-bg)}
 
@@ -270,13 +272,33 @@ const ACADEMIC = {"version":"v1 · 学术研究代理核实版（2026-08-24）",
 /* 方言代表点 */
 const POINTS = {"type":"FeatureCollection","features":[{"type":"Feature","properties":{"name":"梅县","label":"梅县话 · 代表音","region":"粤台片"},"geometry":{"type":"Point","coordinates":[116.117,24.288]}},{"type":"Feature","properties":{"name":"长汀","label":"长汀话 · 客家祖地","region":"汀州片"},"geometry":{"type":"Point","coordinates":[116.361,25.8046]}},{"type":"Feature","properties":{"name":"赣州","label":"赣州话","region":"赣南片"},"geometry":{"type":"Point","coordinates":[114.93,25.83]}},{"type":"Feature","properties":{"name":"苗栗","label":"四县腔","region":"台湾片"},"geometry":{"type":"Point","coordinates":[120.82,24.56]}},{"type":"Feature","properties":{"name":"成都","label":"土广东话","region":"四川片"},"geometry":{"type":"Point","coordinates":[104.06,30.57]}}]};
 
-/* 地理标注：山川形胜如何塑造方言区（SVG 符号 + 突出字体） */
+/* 地理标注：山川形胜如何塑造方言区（可点击热点：图+解读+客家话关联） */
 const GEOMARK=[
-  {name:"南岭",type:"mountain",coord:[112.6,24.9],tag:"中原入岭分水岭"},
-  {name:"武夷山",type:"mountain",coord:[117.2,27.6],tag:"闽赣界山"},
-  {name:"梅关古道",type:"pass",coord:[114.35,25.28],tag:"唐宋入粤孔道"},
-  {name:"宁化石壁",type:"ancestral",coord:[116.65,26.27],tag:"客家祖地"},
-  {name:"梅江",type:"river",coord:[116.05,24.42],tag:"客都母亲河"}
+  {name:"南岭",type:"mountain",coord:[112.6,24.9],tag:"中原入岭分水岭",
+   img:"https://q5.itc.cn/q_70/images03/20251230/2fff57dfbea3456fbafce7f2306a9d2a.png",
+   info:"南岭横亘赣湘粤桂，是中原汉人南迁进入岭南的第一道大山。梅关古道等山口，是客家先民南下的必经孔道。",
+   relation:"山高路险的地理屏障，使南下的中原汉语在岭内自成一体——客家话大量存古音，与南岭的隔离密切相关。",
+   src:"公开网络资料（南岭山脉）"},
+  {name:"武夷山",type:"mountain",coord:[117.2,27.6],tag:"闽赣界山",
+   img:"https://q3.itc.cn/q_70/images01/20250213/8d82a01cd67447ffbd9617d5f0d49173.jpeg",
+   info:"武夷山纵贯闽赣边界，是客家先民由赣入闽的天险。唐末战乱后，客家先民翻越武夷山进入闽西汀州，奠定客家民系根基。",
+   relation:"武夷山以西的赣南、以东的闽西，正是客家话核心区（宁龙片/汀州片）所在——山脉界定了方言区。",
+   src:"公开网络资料（武夷山九曲溪）"},
+  {name:"梅关古道",type:"pass",coord:[114.35,25.28],tag:"唐宋入粤孔道",
+   img:"https://gips3.baidu.com/it/u=1893281196,1169744716&fm=3074&app=3074&f=JPEG?w=1080&h=1409",
+   info:"梅关古道开凿于唐开元四年（716 年）张九龄主持，是岭南与中原之间的官道咽喉，客家先民南迁粤东的重要通道。",
+   relation:"「从梅岭下来的人」——粤北客家人以此自称；客家话沿古道入岭，梅关见证了一千三百年客音南下。",
+   src:"公开网络资料（梅关古道）"},
+  {name:"宁化石壁",type:"ancestral",coord:[116.65,26.27],tag:"客家祖地",
+   img:"https://dimg04.c-ctrip.com/images/1me2012000qmk0dsl37AF_R_640_10000_Q90.jpg?proc=source/tripcommunity",
+   info:"福建宁化县石壁镇，被誉为「客家祖地」——客家民系形成期的中转站，200 余姓氏族谱记载在此中转；石壁客家公祠是全球客家的朝圣之地。",
+   relation:"石壁中转的移民方言，经汀州片向粤东扩散——「姓氏—迁徙—方言」三线同源的起点。",
+   src:"公开网络资料（石壁客家祖地）"},
+  {name:"梅江",type:"river",coord:[116.05,24.42],tag:"客都母亲河",
+   img:"https://gips0.baidu.com/it/u=1297680127,706397810&fm=3074&app=3074&f=JPEG?w=1440&h=2642",
+   info:"梅江是梅州的母亲河、韩江上游，流经世界客都梅州城区。梅县话作为客家话代表音，正是沿梅江流域形成的核心音系。",
+   relation:"梅江流域 = 粤台片梅惠小片核心区；山歌从梅江唱到南洋——一条河，一串客音。",
+   src:"公开网络资料（梅江）"}
 ];
 
 /* ============================================================
@@ -296,8 +318,7 @@ map.on("load",()=>{
   loadProvince();              // 省界骨架
   loadPolityRegions();         // 重点2：政区套合 AOI
   addPoints();                 // 代表点
-  addMarkIcons();               // 地理标注 SVG + 木刻山符号（山符号加载完自动挂山脉层）
-  addGeoMark();                 // 地理标注（突出字体）
+  addMarkIcons();               // 地理标注 SVG + 木刻山符号（图标加载完自动挂标注/山脉层）
   bindInteractions();
   setTimeout(()=>{const l=document.getElementById("loading");if(l){l.style.opacity=0;setTimeout(()=>l.remove(),600);}},600);
 });
@@ -368,10 +389,14 @@ const MARK_ICONS={
   river:'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><path d="M6 18 Q16 8 24 20 T42 22" fill="none" stroke="rgba(46,94,140,0.6)" stroke-width="1.8" stroke-linecap="round"/><circle cx="10" cy="27" r="2.5" fill="rgba(46,94,140,0.45)"/></svg>'
 };
 function addMarkIcons(){
+  // 地理标注图标：全部加载完成后才挂标注层（避免部分不显示）
+  const markKeys=Object.keys(MARK_ICONS);
+  let gLoaded=0;
   Object.entries(MARK_ICONS).forEach(([k,svg])=>{
     const img=new Image();
     img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
-    img.onload=()=>{ if(!map.hasImage('mark-'+k)) map.addImage('mark-'+k,img); };
+    img.onload=()=>{ if(!map.hasImage('mark-'+k)) map.addImage('mark-'+k,img); gLoaded++; if(gLoaded===markKeys.length) addGeoMark(); };
+    img.onerror=()=>{ gLoaded++; if(gLoaded===markKeys.length) addGeoMark(); };
   });
   // 山符号：细线条象形（透明、细描边），加载完成后挂山脉层
   const mountSvgs=[
@@ -418,7 +443,17 @@ function bindInteractions(){
     const p=e.features[0].properties;
     openPanel("方言代表点",p.label,`<p style="color:var(--ink-soft)">${p.name} · 代表音。点击相邻色块可进入片区详情。</p>`,"资料来源：待补充");
   });
-  ["regions-fill","points-circle"].forEach(l=>{
+  map.on("click","geomark-l",e=>{
+    const p=e.features[0].properties;
+    const g=GEOMARK.find(x=>x.name===p.name)||{};
+    let h='<div class="p-voice"><div class="pv-word">'+g.name+'</div><div class="pv-ipa">'+g.tag+'</div></div>';
+    if(g.img) h+='<div class="geo-img"><img src="'+g.img+'" alt="'+g.name+'" loading="lazy" onerror="this.parentNode.style.display=\'none\'"></div>';
+    h+='<div class="p-sec"><h4>地标解读</h4><p>'+g.info+'</p></div>'+
+       '<div class="p-sec"><h4>与客家话的关联</h4><p>'+g.relation+'</p></div>'+
+       '<div class="p-sec"><h4>资料来源</h4><div class="src">'+g.src+'（图片为网络公开资料）</div></div>';
+    openPanelHTML('地标热点',g.name,h);
+  });
+  ["regions-fill","points-circle","geomark-l"].forEach(l=>{
     map.on("mouseenter",l,()=>map.getCanvas().style.cursor="pointer");
     map.on("mouseleave",l,()=>map.getCanvas().style.cursor="");
   });
