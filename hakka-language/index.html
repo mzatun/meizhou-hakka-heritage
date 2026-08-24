@@ -237,9 +237,7 @@ body{
 const CONFIG={
   center:[115.0,25.2],zoom:5.2,pitch:0,      // 默认 2D 平视；开「地形立体」开关才转 3D 俯冲
   basemapTiles:[
-    "https://webrd01.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}",
-    "https://webrd02.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}",
-    "https://webrd03.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}"
+    "https://server.arcgisonline.com/ArcGIS/rest/services/World_Terrain_Base/MapServer/tile/{z}/{y}/{x}"
   ],
   terrainTiles:"https://demotiles.maplibre.org/terrain-tiles/{z}/{x}/{y}.png", // terrarium 编码
   provinceUrl:"https://geo.datav.aliyun.com/areas_v3/bound/100000_full.json",
@@ -274,6 +272,15 @@ const POINTS={type:"FeatureCollection",features:[
   {type:"Feature",properties:{name:"成都",label:"土广东话"},geometry:{type:"Point",coordinates:[104.06,30.57]}}
 ]};
 
+/* 地理标注：山川形胜如何塑造方言区（复刻迁徙地图的山水叙事层） */
+const GEOMARK=[
+  {name:"南岭",coord:[112.6,24.9],tag:"中原入岭分水岭"},
+  {name:"武夷山",coord:[117.2,27.6],tag:"闽赣界山"},
+  {name:"梅关古道",coord:[114.35,25.28],tag:"唐宋入粤孔道"},
+  {name:"宁化石壁",coord:[116.65,26.27],tag:"客家祖地"},
+  {name:"梅江",coord:[116.05,24.42],tag:"客都母亲河"}
+];
+
 /* ============================================================
    MAP
 ============================================================ */
@@ -291,21 +298,21 @@ map.on("load",()=>{
   loadProvince();              // 省界骨架
   loadPolityRegions();         // 重点2：政区套合 AOI
   addPoints();                 // 代表点
+  addGeoMark();                // 地理标注（山/古道/祖地）
   bindInteractions();
   setTimeout(()=>{const l=document.getElementById("loading");if(l){l.style.opacity=0;setTimeout(()=>l.remove(),600);}},600);
 });
 
 function addBasemap(){
-  map.addSource("basemap",{type:"raster",tiles:CONFIG.basemapTiles,tileSize:256,attribution:"© 高德地图"});
-  map.addLayer({id:"basemap",type:"raster",source:"basemap",paint:{"raster-opacity":0.42}});
+  map.addSource("basemap",{type:"raster",tiles:CONFIG.basemapTiles,tileSize:256,attribution:"© Esri World Terrain"});
+  map.addLayer({id:"basemap",type:"raster",source:"basemap",paint:{"raster-opacity":0.95}});
 }
 
 /* 重点1：地形数据 —— 默认 2D 平面 + hillshade 山体阴影（晕渲即可见地形感）
    打开「地形立体」开关时才 setTerrain 切 3D 俯冲（与开关状态严格一致） */
 function addTerrainAndSky(){
+  // DEM 数据仅供「地形立体」3D 开关使用（Esri 地形底图已自带分层设色与山影）
   map.addSource("terrain",{type:"raster-dem",tiles:[CONFIG.terrainTiles],encoding:"terrarium",tileSize:256});
-  map.addLayer({id:"hillshade",type:"hillshade",source:"terrain",
-    paint:{"hillshade-exaggeration":0.6,"hillshade-shadow-color":"#5C4A2E","hillshade-highlight-color":"#F5EAD2","hillshade-accent-color":"#B09A6B"}});
   map.once("idle",()=>map.fitBounds([[108.5,20.8],[122.5,32.0]],{padding:{top:80,bottom:120,left:40,right:340},duration:1800}));
 }
 
@@ -338,6 +345,15 @@ function addPoints(){
   map.addLayer({id:"points-label",type:"symbol",source:"points",
     layout:{"text-field":["get","name"],"text-size":11,"text-offset":[0,1.2],"text-font":["Noto Sans CJK SC Regular"]},
     paint:{"text-color":"#7A2414","text-halo-color":"#FBF4E4","text-halo-width":1.2}});
+}
+function addGeoMark(){
+  const fc={type:"FeatureCollection",features:GEOMARK.map(g=>({type:"Feature",
+    properties:{name:g.name,tag:g.tag||""},geometry:{type:"Point",coordinates:g.coord}}))};
+  map.addSource("geomark",{type:"geojson",data:fc});
+  map.addLayer({id:"geomark-l",type:"symbol",source:"geomark",
+    layout:{"text-field":["concat",["get","name"],"\n",["get","tag"]],
+      "text-size":12,"text-offset":[0,-0.8],"text-line-height":1.35,"text-font":["Noto Sans CJK SC Regular"]},
+    paint:{"text-color":"#5C4A2E","text-halo-color":"#FBF4E4","text-halo-width":1.6}});
 }
 
 /* ============================================================
