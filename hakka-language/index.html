@@ -85,6 +85,14 @@ body{
 #timeline .tl-d-impact{font-size:12px;color:var(--ink-soft);line-height:1.6;margin-top:3px}
 #timeline .tl-d-src{font-size:10.5px;color:var(--ink-faint);margin-top:4px}
 #timeline .tl-d-src .tl-ok{color:var(--green);font-weight:700}
+#timeline .tl-fold{position:absolute;right:10px;top:9px;width:24px;height:24px;border-radius:50%;
+  border:1px solid var(--gold-soft);background:#fff;color:var(--zhu);cursor:pointer;font-size:12px;line-height:1;z-index:2}
+#timeline .tl-fold:hover{background:var(--zhu);color:#fff}
+#tl-restore{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);z-index:15;
+  display:none;align-items:center;gap:6px;font-size:13px;color:var(--zhu-deep);
+  background:rgba(251,244,228,.95);border:1px solid var(--gold-soft);border-radius:999px;
+  padding:6px 16px;cursor:pointer;box-shadow:var(--elev);letter-spacing:.1em}
+#tl-restore:hover{background:var(--zhu);color:#fff}
 
 #panel{position:absolute;right:14px;top:96px;z-index:15;width:318px;max-height:calc(100% - 200px);
   background:rgba(251,244,228,.97);border:1px solid var(--gold-soft);border-radius:var(--radius);
@@ -177,9 +185,10 @@ body{
 <div class="hint">点击色块听声音 · 拖动时间轴看演化</div>
 
 <aside id="timeline">
+  <button class="tl-fold" id="tl-fold" title="收起时间轴">▾</button>
   <div class="tl-year" id="tl-year">317 年</div>
   <div class="tl-era" id="tl-era">两晋 · 衣冠南渡</div>
-  <input type="range" id="tl-slider" min="0" max="7" value="3" step="1">
+  <input type="range" id="tl-slider" min="0" max="7" value="7" step="1">
   <div class="tl-marks" id="tl-marks"></div>
   <div class="tl-detail" id="tl-detail">
     <div class="tl-d-title" id="tl-d-title"></div>
@@ -187,6 +196,7 @@ body{
     <div class="tl-d-src" id="tl-d-src"></div>
   </div>
 </aside>
+<button id="tl-restore">◈ 时间轴</button>
 
 <aside id="panel">
   <button class="p-close" onclick="closePanel()">✕</button>
@@ -207,7 +217,7 @@ body{
    CONFIG
 ============================================================ */
 const CONFIG={
-  center:[115.0,25.2],zoom:5.2,pitch:52,     // 俯冲赣闽粤核心山区，地形即叙事
+  center:[115.0,25.2],zoom:5.2,pitch:0,      // 默认 2D 平视；开「地形立体」开关才转 3D 俯冲
   basemapTiles:[
     "https://webrd01.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}",
     "https://webrd02.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}",
@@ -269,12 +279,12 @@ function addBasemap(){
   map.addLayer({id:"basemap",type:"raster",source:"basemap",paint:{"raster-opacity":0.42}});
 }
 
-/* 重点1：地形 3D + 山体阴影（地形=客家话存古的「保温箱」） */
+/* 重点1：地形数据 —— 默认 2D 平面 + hillshade 山体阴影（晕渲即可见地形感）
+   打开「地形立体」开关时才 setTerrain 切 3D 俯冲（与开关状态严格一致） */
 function addTerrainAndSky(){
   map.addSource("terrain",{type:"raster-dem",tiles:[CONFIG.terrainTiles],encoding:"terrarium",tileSize:256});
-  map.setTerrain({source:"terrain",exaggeration:1.6});
   map.addLayer({id:"hillshade",type:"hillshade",source:"terrain",
-    paint:{"hillshade-exaggeration":0.55,"hillshade-shadow-color":"#6B5936","hillshade-highlight-color":"#F1E6C8","hillshade-accent-color":"#B09A6B"}});
+    paint:{"hillshade-exaggeration":0.6,"hillshade-shadow-color":"#5C4A2E","hillshade-highlight-color":"#F5EAD2","hillshade-accent-color":"#B09A6B"}});
   map.once("idle",()=>map.fitBounds([[108.5,20.8],[122.5,32.0]],{padding:{top:80,bottom:120,left:40,right:340},duration:1800}));
 }
 
@@ -363,6 +373,20 @@ function openPanel(tag,title,body,src){
   document.getElementById("panel").classList.add("open");
 }
 function closePanel(){document.getElementById("panel").classList.remove("open");}
+/* 面板可移动：按住头部拖拽（close 按钮除外） */
+(function(){
+  const pnl=document.getElementById("panel"),pHead=pnl.querySelector(".p-head");
+  let d=false,ox=0,oy=0;
+  pHead.addEventListener("mousedown",e=>{
+    if(e.target.closest(".p-close"))return;
+    d=true;const r=pnl.getBoundingClientRect();
+    ox=e.clientX-r.left;oy=e.clientY-r.top;
+    pnl.style.right="auto";pnl.style.left=r.left+"px";pnl.style.top=r.top+"px";pnl.style.bottom="auto";
+    pHead.style.cursor="grabbing";e.preventDefault();
+  });
+  document.addEventListener("mousemove",e=>{if(!d)return;pnl.style.left=(e.clientX-ox)+"px";pnl.style.top=(e.clientY-oy)+"px";});
+  document.addEventListener("mouseup",()=>{d=false;pHead.style.cursor="";});
+})();
 
 /* ============================================================
    声音：播放链路（骨架占位音）+ 声音条
@@ -415,6 +439,9 @@ TIMELINE.forEach((t,i)=>{
 });
 slider.max=TIMELINE.length-1;
 slider.addEventListener("input",()=>applyTimeline(+slider.value));
+const tlFold=document.getElementById("tl-fold"),tlRestore=document.getElementById("tl-restore"),tlBox=document.getElementById("timeline");
+tlFold.addEventListener("click",()=>{tlBox.style.display="none";tlRestore.style.display="flex";});
+tlRestore.addEventListener("click",()=>{tlBox.style.display="block";tlRestore.style.display="none";});
 function applyTimeline(i){
   const t=TIMELINE[i];
   document.getElementById("tl-year").textContent=t.year+" 年";
