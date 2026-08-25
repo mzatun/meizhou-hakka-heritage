@@ -85,6 +85,8 @@ body{
 .f-play{width:30px;height:30px;border-radius:50%;border:none;background:var(--accent-red);color:#fff;
   font-size:13px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center}
 .f-play:hover{background:var(--zhu-deep)}
+.f-ext{background:var(--gold);}
+.f-ext:hover{background:var(--gold-deep);}
 .f-tag{width:30px;height:30px;border-radius:50%;background:var(--tag);border:1px solid var(--gold-soft);
   display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
 .f-txt{flex:1;min-width:0}
@@ -564,26 +566,33 @@ function focusSurname(i){
 /* ============================================================
    乡音坊：客家山歌 / 五句板 / 童谣 / 客语音乐（点击播放）
 ============================================================ */
+function isAudioUrl(u){return /\.(mp3|wav|ogg|m4a|aac|flac)(\?|#|$)/i.test(u);}
 function openFolkPanel(){
-  let h='<div class="p-note">客家乡音库：山歌 · 五句板 · 童谣 · 客语音乐，按地区分组。直链可直接播放，标🔍的到平台检索。</div>';
+  let h='<div class="p-note">客家乡音库：山歌 · 五句板 · 童谣 · 客语音乐，按地区分组。<b>▶ 内嵌播放</b>（音频直链）/<b>↗ 跳转播放</b>（平台页面，原站播放）。</div>';
   (FOLK.groups||[]).forEach(g=>{
     h+='<div class="p-sec"><h4>'+g.region+'</h4><div class="folk-list">';
     (g.items||[]).forEach(it=>{
+      const u=it.url?String(it.url).replace(/'/g,"\\'"):'';
+      const isA=it.url?isAudioUrl(it.url):false;
       h+='<div class="f-item">'+
-        (it.url?'<button class="f-play" onclick="playFolk(\''+String(it.url).replace(/'/g,"\\'")+'\')">▶</button>':'<span class="f-tag">🔍</span>')+
+        (it.url?'<button class="f-play'+(isA?'':' f-ext')+'" onclick="playFolk(\''+u+'\')">'+(isA?'▶':'↗')+'</button>':'<span class="f-tag">🔍</span>')+
         '<div class="f-txt"><b>'+it.name+'</b> <span class="f-type">'+it.type+'</span>'+
         '<div class="m-desc">'+it.note+'</div>'+
-        '<div class="m-meta">'+(it.url?('直链播放 · '+it.src):('搜：'+it.search))+'</div></div></div>';
+        '<div class="m-meta">'+(it.url?(isA?'内嵌播放 · '+it.src:'跳转播放 · '+it.src):('搜：'+it.search))+'</div></div></div>';
     });
     h+='</div></div>';
   });
-  h+='<div class="p-note">乡音链接为公开平台资源，版权归原作者/平台所有。</div>';
+  h+='<div class="p-note">乡音链接为公开平台资源，版权归原作者/平台所有；跳转条目需在平台页内播放。</div>';
   openPanelHTML('乡音坊','客家乡音 · 山歌童谣与音乐',h);
 }
 function playFolk(url){
-  playFile(url);
-  document.getElementById("sb-txt").innerHTML='<b>乡音播放中</b><br>'+url.substring(0,42)+'…';
-  document.getElementById("sb-play").textContent='❚❚';
+  if(isAudioUrl(url)){
+    playFile(url);
+    setSb("❚❚",'<b>乡音播放中</b><br>'+url.substring(0,42)+'…');
+  }else{
+    window.open(url,'_blank','noopener');
+    setSb("▶",'<b>已打开原平台</b><br>'+url.substring(0,42)+'…');
+  }
 }
 
 /* ============================================================
@@ -654,11 +663,17 @@ function toggleClanLayers(on){addClanLayers();["clan-pts-c","clan-pts-l","clan-p
    声音：播放链路（骨架占位音）+ 声音条
    真实公开音源（维基共享/客语辞典/语保平台）阶段 2 逐区核实挂接
 ============================================================ */
-let audioCtx=null; let __audio=null;
+let audioCtx=null; let __audio=null; let __audioTimer=null;
+function setSb(icon,html){document.getElementById("sb-play").textContent=icon;document.getElementById("sb-txt").innerHTML=html;}
 function playFile(url){
   if(__audio){try{__audio.pause();}catch(e){}}
+  if(__audioTimer){clearInterval(__audioTimer);__audioTimer=null;}
   const a=new Audio(url); __audio=a;
-  a.play().catch(()=>console.warn('音频播放失败:',url));
+  a.onplay=()=>{document.getElementById("sb-play").textContent="❚❚";};
+  a.onpause=()=>{document.getElementById("sb-play").textContent="▶";};
+  a.onended=()=>{document.getElementById("sb-play").textContent="▶";if(__audioTimer){clearInterval(__audioTimer);}};
+  a.onerror=()=>{setSb("▶",'<b>播放失败</b><br>音频加载失败或链接已失效');};
+  a.play().catch(()=>{setSb("▶",'<b>无法内嵌播放</b><br>该链接为平台页面，点击条目将跳转原平台');});
   return a;
 }
 function playRegionVoice(info,idx){
