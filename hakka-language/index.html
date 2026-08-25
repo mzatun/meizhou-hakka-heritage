@@ -381,12 +381,12 @@ function addGeoMark(){
       "text-size":12,"text-offset":[0,1.1],"text-line-height":1.3,"text-font":["Noto Sans CJK SC Regular"]},
     paint:{"text-color":"#6B5630","text-halo-color":"#FBF4E4","text-halo-width":1.4}});
 }
-/* 地理标注 SVG 符号：细线条 · 半透明 · 象形 */
+/* 地理标注 SVG 符号：细线条 · 半透明 · 象形（显式 width/height 保证 addImage 正常） */
 const MARK_ICONS={
-  mountain:'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><path d="M6 40 L20 14 L28 28 L34 22 L44 40 Z" fill="none" stroke="rgba(96,70,36,0.6)" stroke-width="1.6" stroke-linejoin="round"/></svg>',
-  pass:'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><path d="M8 36 Q24 10 40 36" fill="none" stroke="rgba(128,84,40,0.6)" stroke-width="1.6" stroke-linecap="round"/><path d="M22 36 L24 27 L26 36 Z" fill="rgba(128,84,40,0.45)"/></svg>',
-  ancestral:'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><path d="M8 42 L8 22 L24 8 L40 22 L40 42 Z" fill="none" stroke="rgba(128,88,50,0.6)" stroke-width="1.6" stroke-linejoin="round"/><path d="M19 42 L19 30 L29 30 L29 42" fill="none" stroke="rgba(128,88,50,0.5)" stroke-width="1.3"/></svg>',
-  river:'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><path d="M6 18 Q16 8 24 20 T42 22" fill="none" stroke="rgba(46,94,140,0.6)" stroke-width="1.8" stroke-linecap="round"/><circle cx="10" cy="27" r="2.5" fill="rgba(46,94,140,0.45)"/></svg>'
+  mountain:'<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48"><path d="M6 40 L20 14 L28 28 L34 22 L44 40 Z" fill="none" stroke="rgba(96,70,36,0.6)" stroke-width="1.6" stroke-linejoin="round"/></svg>',
+  pass:'<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48"><path d="M8 36 Q24 10 40 36" fill="none" stroke="rgba(128,84,40,0.6)" stroke-width="1.6" stroke-linecap="round"/><path d="M22 36 L24 27 L26 36 Z" fill="rgba(128,84,40,0.45)"/></svg>',
+  ancestral:'<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48"><path d="M8 42 L8 22 L24 8 L40 22 L40 42 Z" fill="none" stroke="rgba(128,88,50,0.6)" stroke-width="1.6" stroke-linejoin="round"/><path d="M19 42 L19 30 L29 30 L29 42" fill="none" stroke="rgba(128,88,50,0.5)" stroke-width="1.3"/></svg>',
+  river:'<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48"><path d="M6 18 Q16 8 24 20 T42 22" fill="none" stroke="rgba(46,94,140,0.6)" stroke-width="1.8" stroke-linecap="round"/><circle cx="10" cy="27" r="2.5" fill="rgba(46,94,140,0.45)"/></svg>'
 };
 function addMarkIcons(){
   // 地理标注图标：全部加载完成后才挂标注层（避免部分不显示）
@@ -398,34 +398,6 @@ function addMarkIcons(){
     img.onload=()=>{ if(!map.hasImage('mark-'+k)) map.addImage('mark-'+k,img); gLoaded++; if(gLoaded===markKeys.length) addGeoMark(); };
     img.onerror=()=>{ gLoaded++; if(gLoaded===markKeys.length) addGeoMark(); };
   });
-  // 山符号：细线条象形（透明、细描边），加载完成后挂山脉层
-  const mountSvgs=[
-    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><path d="M10 52 L30 18 L46 40 L54 30 L62 52 Z" fill="none" stroke="rgba(100,72,40,0.45)" stroke-width="1.4" stroke-linejoin="round"/></svg>',
-    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><path d="M8 52 L24 16 L36 38 L46 24 L58 52 Z" fill="none" stroke="rgba(100,72,40,0.4)" stroke-width="1.4" stroke-linejoin="round"/></svg>',
-    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><path d="M6 52 L18 22 L28 40 L38 26 L48 44 L58 52 Z" fill="none" stroke="rgba(100,72,40,0.35)" stroke-width="1.3" stroke-linejoin="round"/></svg>'
-  ];
-  let mLoaded=0;
-  mountSvgs.forEach((svg,i)=>{
-    const img=new Image();
-    img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
-    img.onload=()=>{ if(!map.hasImage('mount'+(i+1))) map.addImage('mount'+(i+1),img); mLoaded++; if(mLoaded===mountSvgs.length) addMountSymbols(); };
-    img.onerror=()=>{ mLoaded++; if(mLoaded===mountSvgs.length) addMountSymbols(); };
-  });
-}
-/* 山脉点位：木刻山符号散布（国风山形，呼应"地形影响传播"） */
-const MOUNTS=[
-  {name:"南岭",coord:[112.6,24.9]},{name:"武夷山",coord:[117.2,27.6]},
-  {name:"罗霄山",coord:[114.1,26.6]},{name:"大庾岭",coord:[114.4,25.4]},
-  {name:"九连山",coord:[114.6,24.6]},{name:"莲花山",coord:[115.4,23.7]},
-  {name:"博平岭",coord:[116.9,25.0]},{name:"玳瑁山",coord:[116.6,24.9]},
-  {name:"骑田岭",coord:[112.9,25.5]},{name:"九嶷山",coord:[112.0,25.7]}
-];
-function addMountSymbols(){
-  const fc={type:"FeatureCollection",features:MOUNTS.map((m,i)=>({type:"Feature",
-    properties:{icon:"mount"+((i%3)+1),name:m.name},geometry:{type:"Point",coordinates:m.coord}}))};
-  map.addSource("mounts",{type:"geojson",data:fc});
-  map.addLayer({id:"mounts-l",type:"symbol",source:"mounts",
-    layout:{"icon-image":["get","icon"],"icon-size":0.45,"icon-allow-overlap":true}});
 }
 
 /* ============================================================
