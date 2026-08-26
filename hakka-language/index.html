@@ -451,7 +451,7 @@ function openRegionPanel(info){
   document.getElementById("p-tag").textContent="语系分片 · "+info.name;
   document.getElementById("p-title").textContent=info.name;
   const audioArr=v.audio||[];
-  const chips='<div class="pv-chips">'+audioArr.map((a,i)=>'<span class="pv-chip" onclick="playRegionVoice(window.__REGION,'+i+')">▶ <b>'+a.word+'</b> '+(a.ipa||'')+'</span>').join('')+'<span class="pv-chip" onclick="aiRead()">🤖 AI 朗读（待启用）</span></div>';
+  const chips='<div class="pv-chips">'+audioArr.map((a,i)=>'<span class="pv-chip" onclick="playRegionVoice(window.__REGION,'+i+')">▶ <b>'+a.word+'</b> '+(a.ipa||'')+'</span>').join('')+'<span class="pv-chip" onclick="aiRead()">🤖 AI 朗读</span></div>';
   let h=`<div class="p-voice">
     <div class="pv-play" onclick="playRegionVoice(window.__REGION)">
       <div class="pv-btn">▶</div>
@@ -596,31 +596,58 @@ function playFolk(url){
 }
 
 /* ============================================================
-   TTS · AI 语音接口（v1.1 预留）
-   客家话 TTS：DashScope CosyVoice API（方言清单含客家话）。
-   - 当前版本未配置密钥，AI 朗读显示「待启用」；
-   - v1.1：配置后端密钥代理后启用，前端不存明文 key。
+   TTS · AI 客家话语音接口（已启用）
+   引擎：DashScope CosyVoice 非实时 TTS（同步返回音频 URL）
+   客家话：instruction 指令控制方言（CosyVoice 方言能力）
+   Key 三选一：① URL 加 ?dsk=你的Key（本站自用）② localStorage 设 hakka_dsk ③ 改下方 apiKey
+   注：key 前端可见属个人教学站折中；对外发布应走后端代理。
    客家话大模型接口：下一版本接入（AILanguage 字段预留）。
 ============================================================ */
 const TTS_CONFIG={
-  enabled:false,          // v1.1 置 true
-  provider:"dashscope",   // 阿里云百炼
-  model:"cosyvoice-v3",   // 方言清单含客家话
-  apiBase:"https://dashscope.aliyuncs.com/api/v1/services/aigc/text2audio",
-  voice:"longxiaochun",   // 音色（待定）
-  dialect:"hakka"         // 客家话
+  enabled:true,                            // 已启用
+  provider:"dashscope",
+  model:"cosyvoice-v3-plus",               // 方言能力较强版本
+  apiBase:"https://dashscope.aliyuncs.com/api/v1/services/audio/tts/SpeechSynthesizer",
+  voice:"longxiaochun_v3",                 // 系统音色（可换/声音复刻）
+  instruction:"请用客家话（梅县口音）朗读",    // 方言指令
+  format:"wav", sample_rate:24000,
+  apiKey:""                                // 三选一（优先 URL/localStorage）
 };
 const AILanguage={        // 客家话大模型接口（v2 预留）
   enabled:false,
   tts:TTS_CONFIG,
   llm:null                // 客语大模型（如客语 ASR/翻译/对话），下一版本
 };
-function aiRead(){
-  if(!TTS_CONFIG.enabled){
-    alert('AI 客家话朗读接口待 v1.1 启用（DashScope CosyVoice，需配置后端密钥代理）；当前请使用真实乡音音频。');
+function getTTSKey(){
+  const p=new URLSearchParams(location.search).get("dsk");
+  if(p) return p;
+  try{const l=localStorage.getItem("hakka_dsk"); if(l) return l;}catch(e){}
+  return TTS_CONFIG.apiKey;
+}
+async function aiRead(){
+  const key=getTTSKey();
+  if(!key){
+    alert('请先配置 DashScope API Key：本页 URL 后加 ?dsk=你的Key（本站自用），或在控制台 localStorage 设置 hakka_dsk。');
     return;
   }
-  // v1.1：调后端代理 → 返回 audio URL → playFile
+  const t=(window.__REGION&&window.__REGION.voice)?(window.__REGION.voice.word+'，客家话读音'):'宁卖祖宗田，不忘祖宗言';
+  setSb("▶",'<b>AI 客家话合成中…</b><br>'+t);
+  try{
+    const resp=await fetch(TTS_CONFIG.apiBase,{method:"POST",headers:{
+      "Authorization":"Bearer "+key,"Content-Type":"application/json"},
+      body:JSON.stringify({model:TTS_CONFIG.model,input:{
+        text:t,voice:TTS_CONFIG.voice,format:TTS_CONFIG.format,sample_rate:TTS_CONFIG.sample_rate,
+        instruction:TTS_CONFIG.instruction}})});
+    const j=await resp.json();
+    if(j&&j.output&&j.output.audio&&j.output.audio.url){
+      playFile(j.output.audio.url);
+      setSb("❚❚",'<b>AI 客家话播放中</b><br>'+t.substring(0,18));
+    }else{
+      setSb("▶",'<b>合成失败</b><br>'+(j.message||JSON.stringify(j).slice(0,90)));
+    }
+  }catch(e){
+    setSb("▶",'<b>接口调用失败</b><br>'+e.message+'（可能被 CORS 拦截，需后端代理）');
+  }
 }
 
 /* ============================================================
